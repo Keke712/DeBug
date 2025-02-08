@@ -1,0 +1,12 @@
+{
+  "emulators": {
+    "dataconnect": {
+      "dataDir": "dataconnect/.dataconnect/pgliteData",
+      "host": "localhost",
+      "port": "4000"
+    }
+  },
+  "dataconnect": {
+    "source": "dataconnect"
+  }
+}
