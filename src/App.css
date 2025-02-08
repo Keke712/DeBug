@@ -70,8 +70,15 @@ body {
   background-color: #242424;
 }
 
+.header-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
 .header-logo {
   height: 3rem;
+  cursor: pointer;
 }
 
 .content {
@@ -126,4 +133,30 @@ body {
   text-align: left;
   color: #ffffff;
   margin: 0;
+}
+
+.post-ad-page {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.post-ad-form {
+  margin-top: 2rem;
+  padding: 2rem;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+}
+
+.login-page {
+  padding: 2rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.login-form {
+  margin-top: 2rem;
+  padding: 2rem;
+  background-color: #1a1a1a;
+  border-radius: 8px;
 }
