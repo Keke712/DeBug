@@ -1,6 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import Button from "./Button";
 import logo from "../assets/logo.png";
-import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 const Header = () => {
@@ -8,15 +8,25 @@ const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const checkLoginStatus = () => {
-      const user = localStorage.getItem("currentUser");
-      setIsLoggedIn(!!user);
-    };
-
+    // Vérification initiale
     checkLoginStatus();
+
+    // Écouter les changements de localStorage
     window.addEventListener("storage", checkLoginStatus);
-    return () => window.removeEventListener("storage", checkLoginStatus);
+
+    // Créer un intervalle de vérification
+    const interval = setInterval(checkLoginStatus, 1000);
+
+    return () => {
+      window.removeEventListener("storage", checkLoginStatus);
+      clearInterval(interval);
+    };
   }, []);
+
+  const checkLoginStatus = () => {
+    const user = localStorage.getItem("currentUser");
+    setIsLoggedIn(!!user);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("currentUser");
