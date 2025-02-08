@@ -29,27 +29,26 @@ function PostAd() {
 
     return (
         <div className="post-ad-container">
-            <h2>Create a ticket</h2>
+            <h2>Post a bounty</h2>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                    <label>Title:</label>
                     <input
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         required
+                        placeholder="Title"
+                        className="modern-input"
                     />
                 </div>
                 <div className="form-group">
-                    <label>Description:</label>
                     <textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         required
+                        placeholder="Description"
+                        className="modern-input"
                     />
-                </div>
-                <div className="price-field">
-                    <label>Price:</label>
                 </div>
                 <div className="bottom-container">
                     <input
@@ -57,6 +56,8 @@ function PostAd() {
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
                         required
+                        placeholder="Price"
+                        className="modern-input price-input"
                     />
                     <button type="submit" className="post-button">
                         Post
