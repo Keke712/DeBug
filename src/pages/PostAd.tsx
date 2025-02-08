@@ -29,7 +29,7 @@ function PostAd() {
 
     return (
         <div className="post-ad-container">
-            <h2>Post New Ad</h2>
+            <h2>Create a ticket</h2>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label>Title:</label>
@@ -48,18 +48,20 @@ function PostAd() {
                         required
                     />
                 </div>
-                <div className="form-group">
+                <div className="price-field">
                     <label>Price:</label>
+                </div>
+                <div className="bottom-container">
                     <input
                         type="number"
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
                         required
                     />
+                    <button type="submit" className="post-button">
+                        Post
+                    </button>
                 </div>
-                <button type="submit" className="post-button">
-                    Post
-                </button>
             </form>
         </div>
     );
