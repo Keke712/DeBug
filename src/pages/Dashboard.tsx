@@ -260,24 +260,30 @@ const Dashboard = () => {
     setIsLoading(true);
     setError(null);
     try {
-      if (typeof window.ethereum === "undefined") {
-        throw new Error("MetaMask n'est pas installé !");
+      // Mettre à jour Supabase pour refléter le rejet
+      const { error: supabaseError } = await supabase
+        .from("submits")
+        .update({ status: "rejected" })
+        .eq("hash", submit.hash)
+        .eq("submitter_address", submit.submitter_address);
+
+      if (supabaseError) {
+        throw supabaseError;
       }
 
-      await window.ethereum.request({ method: "eth_requestAccounts" });
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-        contractAddress,
-        BugBountyPlatformABI,
-        signer
-      );
-
-      // Rejeter le claim sur le smart contract
-      const transaction = await contract.rejectClaim();
-      await transaction.wait();
-
-      // TODO: Update Supabase to reflect rejection
+      // Mettre à jour l'état local pour refléter le changement
+      setSubmits((prevSubmits) => {
+        const updatedSubmits = { ...prevSubmits };
+        if (updatedSubmits[contractHash]) {
+          updatedSubmits[contractHash] = updatedSubmits[contractHash].map((s) =>
+            s.hash === submit.hash &&
+            s.submitter_address === submit.submitter_address
+              ? { ...s, status: "rejected" }
+              : s
+          );
+        }
+        return updatedSubmits;
+      });
 
       alert("Claim rejected successfully!");
     } catch (error: any) {
