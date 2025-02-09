@@ -196,14 +196,68 @@ const Dashboard = () => {
     }
   };
 
-  const handleApproveSubmit = async (submit: Submit) => {
-    // TODO: Implémenter la logique d'approbation
-    console.log("Approve submit:", submit);
+  const handleApproveSubmit = async (submit: Submit, contractHash: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      if (typeof window.ethereum === "undefined") {
+        throw new Error("MetaMask n'est pas installé !");
+      }
+
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+        contractAddress,
+        BugBountyPlatformABI,
+        signer
+      );
+
+      // Approuver le claim sur le smart contract
+      const transaction = await contract.approveClaim();
+      await transaction.wait();
+
+      // TODO: Update Supabase to reflect approval
+
+      alert("Claim approved successfully!");
+    } catch (error: any) {
+      console.error("Erreur:", error);
+      setError(error.message || "Erreur lors de l'approbation du claim");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRejectSubmit = async (submit: Submit) => {
-    // TODO: Implémenter la logique de rejet
-    console.log("Reject submit:", submit);
+  const handleRejectSubmit = async (submit: Submit, contractHash: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      if (typeof window.ethereum === "undefined") {
+        throw new Error("MetaMask n'est pas installé !");
+      }
+
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+        contractAddress,
+        BugBountyPlatformABI,
+        signer
+      );
+
+      // Rejeter le claim sur le smart contract
+      const transaction = await contract.rejectClaim();
+      await transaction.wait();
+
+      // TODO: Update Supabase to reflect rejection
+
+      alert("Claim rejected successfully!");
+    } catch (error: any) {
+      console.error("Erreur:", error);
+      setError(error.message || "Erreur lors du rejet du claim");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderBountyForm = () => (
@@ -326,15 +380,17 @@ const Dashboard = () => {
             <div className="submit-actions">
               <button
                 className="approve-button"
-                onClick={() => handleApproveSubmit(submit)}
+                onClick={() => handleApproveSubmit(submit, contractHash)}
+                disabled={isLoading}
               >
-                Approve
+                {isLoading ? "Approving..." : "Approve"}
               </button>
               <button
                 className="reject-button"
-                onClick={() => handleRejectSubmit(submit)}
+                onClick={() => handleRejectSubmit(submit, contractHash)}
+                disabled={isLoading}
               >
-                Reject
+                {isLoading ? "Rejecting..." : "Reject"}
               </button>
             </div>
           </div>

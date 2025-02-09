@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { supabase } from "../supabase"; // Adjust the path as necessary
+import { supabase } from "../supabase";
 
 interface ContractModalProps {
   contract: {
@@ -34,7 +34,7 @@ const ContractModal: React.FC<ContractModalProps> = ({ contract, onClose }) => {
           hash: contract.transaction_hash,
           description: bugDescription,
           created_at: new Date().toISOString(),
-          submitter_address: currentUser.address, // Utiliser l'adresse du localStorage
+          submitter_address: currentUser.address,
         },
       ]);
 
