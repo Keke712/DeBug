@@ -1,8 +1,10 @@
 // Dashboard.tsx
 import React, { useEffect, useState } from "react";
-import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
-import { db } from "../firebase";
 import Sidebar from "../components/Sidebar";
+import { ethers } from "ethers";
+import BugBountyPlatformABI from "../components/BugBountyABI.json";
+
+const contractAddress = "0xd9145CCE52D386f254917e481eB44e9943F39138";
 
 interface Ad {
   id: string;
@@ -20,58 +22,45 @@ const Dashboard = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-
-  useEffect(() => {
-    const fetchUserAds = async () => {
-      if (currentUser?.address) {
-        const q = query(
-          collection(db, "ads"),
-          where("userAddress", "==", currentUser.address)
-        );
-        const querySnapshot = await getDocs(q);
-        const ads = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate(),
-        })) as Ad[];
-        setUserAds(ads);
-      }
-    };
-
-    fetchUserAds();
-  }, [currentUser]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleNewBounty = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError(null);
     try {
-      const docRef = await addDoc(collection(db, "ads"), {
-        title,
-        description,
-        price: Number(price),
-        createdAt: new Date(),
-        userAddress: currentUser.address,
-      });
+      if (typeof window.ethereum === "undefined") {
+        throw new Error("MetaMask n'est pas installé !");
+      }
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+        contractAddress,
+        BugBountyPlatformABI,
+        signer
+      );
 
-      // Rafraîchir la liste des bounties
-      const updatedAds = [
-        ...userAds,
-        {
-          id: docRef.id,
-          title,
-          description,
-          price: Number(price),
-          createdAt: new Date(),
-        },
-      ];
-      setUserAds(updatedAds);
+      const bountyAmount = ethers.parseUnits(price, 18);
+      const transaction = await contract.createQuest(title, bountyAmount);
+      setIsLoading(true);
+      await transaction.wait();
+      console.log("Contrat Bug Bounty créé avec succès !", transaction.hash);
 
-      // Réinitialiser le formulaire
       setTitle("");
       setDescription("");
       setPrice("");
       setShowNewBountyForm(false);
-    } catch (error) {
-      console.error("Error adding bounty: ", error);
+      setError(null);
+      alert("Contrat Bug Bounty créé avec succès !");
+    } catch (contractError: any) {
+      console.error("Erreur lors de l'appel du smart contract:", contractError);
+      setError(
+        contractError.message || "Erreur lors de la création du contrat."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -99,7 +88,7 @@ const Dashboard = () => {
         />
       </div>
       <div className="form-group">
-        <label htmlFor="price">Reward Amount (€)</label>
+        <label htmlFor="price">Reward Amount (ETH)</label>
         <input
           id="price"
           type="number"
@@ -117,8 +106,8 @@ const Dashboard = () => {
         >
           Cancel
         </button>
-        <button type="submit" className="submit-button">
-          Create Contract
+        <button type="submit" className="submit-button" disabled={isLoading}>
+          {isLoading ? "Creating Contract..." : "Create Contract"}
         </button>
       </div>
     </form>
@@ -133,6 +122,7 @@ const Dashboard = () => {
             <div className="user-info">
               <p>Connected Address: {currentUser?.address}</p>
             </div>
+            {error && <div className="error-message">{error}</div>}
           </>
         );
       case "bounties":
@@ -143,11 +133,13 @@ const Dashboard = () => {
               <button
                 onClick={() => setShowNewBountyForm(true)}
                 className="new-bounty-button"
+                disabled={isLoading}
               >
-                Create a new contract
+                {isLoading ? "Creating Contract..." : "Create a new contract"}
               </button>
             </div>
             {showNewBountyForm && renderBountyForm()}
+            {error && <div className="error-message">{error}</div>}
             <div className="ads-grid">
               {userAds.map((ad) => (
                 <div key={ad.id} className="ad-card">

@@ -1,6 +1,3 @@
-import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 
 interface Ad {
@@ -12,22 +9,7 @@ interface Ad {
 }
 
 const Home = () => {
-  const [ads, setAds] = useState<Ad[]>([]);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchAds = async () => {
-      const querySnapshot = await getDocs(collection(db, "ads"));
-      const adsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-      })) as Ad[];
-      setAds(adsData);
-    };
-
-    fetchAds();
-  }, []);
 
   return (
     <div className="home-container">
@@ -54,15 +36,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="ads-grid">
-        {ads.map((ad) => (
-          <div key={ad.id} className="ad-card">
-            <h3>{ad.title}</h3>
-            <p className="description">{ad.description}</p>
-            <p className="price">{ad.price}€</p>
-          </div>
-        ))}
-      </div>
+      <div className="ads-grid"></div>
     </div>
   );
 };
