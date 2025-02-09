@@ -260,10 +260,10 @@ const Dashboard = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Mettre à jour Supabase pour refléter le rejet
+      // Supprimer la soumission de Supabase
       const { error: supabaseError } = await supabase
         .from("submits")
-        .update({ status: "rejected" })
+        .delete()
         .eq("hash", submit.hash)
         .eq("submitter_address", submit.submitter_address);
 
@@ -275,17 +275,18 @@ const Dashboard = () => {
       setSubmits((prevSubmits) => {
         const updatedSubmits = { ...prevSubmits };
         if (updatedSubmits[contractHash]) {
-          updatedSubmits[contractHash] = updatedSubmits[contractHash].map((s) =>
-            s.hash === submit.hash &&
-            s.submitter_address === submit.submitter_address
-              ? { ...s, status: "rejected" }
-              : s
+          updatedSubmits[contractHash] = updatedSubmits[contractHash].filter(
+            (s) =>
+              !(
+                s.hash === submit.hash &&
+                s.submitter_address === submit.submitter_address
+              )
           );
         }
         return updatedSubmits;
       });
 
-      alert("Claim rejected successfully!");
+      alert("Claim rejected and submission deleted successfully!");
     } catch (error: any) {
       console.error("Erreur:", error);
       setError(error.message || "Erreur lors du rejet du claim");
