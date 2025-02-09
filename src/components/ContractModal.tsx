@@ -31,10 +31,10 @@ const ContractModal: React.FC<ContractModalProps> = ({ contract, onClose }) => {
       // Ajouter le submit dans Supabase
       const { error: submitError } = await supabase.from("submits").insert([
         {
-          hash: contract.transaction_hash,
+          contract_id: contract.id, // Lier le submit au contrat
           description: bugDescription,
-          created_at: new Date().toISOString(),
-          submitter_address: currentUser.address,
+          wallet_address: currentUser.address,
+          status: "pending",
         },
       ]);
 
