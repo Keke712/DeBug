@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabase";
+import ContractModal from "../components/ContractModal";
 
 interface Contract {
   id: string;
@@ -17,6 +18,9 @@ const Browse = () => {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(
+    null
+  );
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
 
   useEffect(() => {
@@ -76,9 +80,22 @@ const Browse = () => {
             >
               View on Etherscan
             </a>
+            <button
+              className="view-details-button"
+              onClick={() => setSelectedContract(contract)}
+            >
+              View Details & Submit Bug
+            </button>
           </div>
         ))}
       </div>
+
+      {selectedContract && (
+        <ContractModal
+          contract={selectedContract}
+          onClose={() => setSelectedContract(null)}
+        />
+      )}
     </div>
   );
 };

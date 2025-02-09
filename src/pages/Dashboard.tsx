@@ -5,7 +5,7 @@ import { ethers } from "ethers";
 import { supabase } from "../supabase";
 import BugBountyPlatformABI from "../components/BugBountyABI.json";
 
-const contractAddress = "0x688c0611a5691B7c1F09a694bf4ADfb456a58Cf7";
+const contractAddress = "0xf8e81D47203A594245E36C48e151709F0C19fBe8";
 
 interface Ad {
   id: string;
@@ -35,6 +35,13 @@ interface Contract {
   wallet_address: string;
 }
 
+interface Submit {
+  hash: string;
+  description: string;
+  created_at: string;
+  submitter_address: string;
+}
+
 const Dashboard = () => {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [userAds, setUserAds] = useState<Ad[]>([]);
@@ -51,6 +58,8 @@ const Dashboard = () => {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [submits, setSubmits] = useState<{ [key: string]: Submit[] }>({});
+  const [selectedContract, setSelectedContract] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserContracts = async () => {
@@ -76,6 +85,39 @@ const Dashboard = () => {
 
     fetchUserContracts();
   }, [currentUser?.address]);
+
+  useEffect(() => {
+    const fetchSubmits = async () => {
+      if (contracts.length > 0) {
+        const hashes = contracts.map((c) => c.transaction_hash);
+        const { data, error } = await supabase
+          .from("submits")
+          .select("*")
+          .in("hash", hashes);
+
+        if (error) {
+          console.error("Error fetching submits:", error);
+          return;
+        }
+
+        // Grouper les submits par hash de contrat
+        const submitsByHash = (data || []).reduce(
+          (acc: { [key: string]: Submit[] }, submit: Submit) => {
+            if (!acc[submit.hash]) {
+              acc[submit.hash] = [];
+            }
+            acc[submit.hash].push(submit);
+            return acc;
+          },
+          {}
+        );
+
+        setSubmits(submitsByHash);
+      }
+    };
+
+    fetchSubmits();
+  }, [contracts]);
 
   const handleAddTag = () => {
     if (tagInput && !formData.tags.includes(tagInput)) {
@@ -108,7 +150,7 @@ const Dashboard = () => {
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(
         contractAddress,
-        BugBountyPlatformABI, // Important: utiliser BugBountyPlatformABI directement
+        BugBountyPlatformABI,
         signer
       );
 
@@ -257,6 +299,26 @@ const Dashboard = () => {
     </form>
   );
 
+  const renderSubmits = (contractHash: string) => {
+    const contractSubmits = submits[contractHash] || [];
+    return (
+      <div className="submits-container">
+        <h4>Submissions ({contractSubmits.length})</h4>
+        {contractSubmits.map((submit, index) => (
+          <div key={index} className="submit-item">
+            <p className="submit-description">{submit.description}</p>
+            <div className="submit-meta">
+              <span className="submitter">{submit.submitter_address}</span>
+              <span className="submit-date">
+                {new Date(submit.created_at).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const renderBountiesList = () => (
     <div className="ads-grid">
       {contracts.map((contract) => (
@@ -285,6 +347,22 @@ const Dashboard = () => {
           >
             View Transaction
           </a>
+          <button
+            className="view-submits-button"
+            onClick={() =>
+              setSelectedContract(
+                selectedContract === contract.transaction_hash
+                  ? null
+                  : contract.transaction_hash
+              )
+            }
+          >
+            {selectedContract === contract.transaction_hash
+              ? "Hide Submissions"
+              : "View Submissions"}
+          </button>
+          {selectedContract === contract.transaction_hash &&
+            renderSubmits(contract.transaction_hash)}
         </div>
       ))}
     </div>
