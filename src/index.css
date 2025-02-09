@@ -172,9 +172,47 @@ button:focus-visible {
 .ad-card {
   background-color: #2a2a2a;
   border-radius: 8px;
-  padding: 16px;
+  padding: 20px;
   margin-bottom: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contract-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.contract-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 0.9em;
+  color: #a0a0a0;
+}
+
+.contract-type {
+  text-transform: uppercase;
+  font-size: 0.8em;
+  font-weight: 500;
+  color: #646cff;
+}
+
+.transaction-link {
+  color: #646cff;
+  text-decoration: none;
+  font-size: 0.9em;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+.transaction-link:hover {
+  text-decoration: underline;
 }
 
 .item-icon {
@@ -309,6 +347,51 @@ button:focus-visible {
 .cancel-button {
   background-color: #444;
   color: white;
+}
+
+.tags-input-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.add-tag-button {
+  padding: 8px 16px;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background-color: #444;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.remove-tag {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 1.2em;
+}
+
+.remove-tag:hover {
+  color: #ff4444;
 }
 
 @media (prefers-color-scheme: light) {

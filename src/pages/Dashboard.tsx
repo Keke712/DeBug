@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { ethers } from "ethers";
+import { supabase } from "../supabase";
 import BugBountyPlatformABI from "../components/BugBountyABI.json";
 
 const contractAddress = "0x688c0611a5691B7c1F09a694bf4ADfb456a58Cf7";
@@ -14,16 +15,84 @@ interface Ad {
   createdAt: Date;
 }
 
+interface ContractFormData {
+  title: string;
+  description: string;
+  price: string;
+  contractType: string;
+  tags: string[];
+}
+
+interface Contract {
+  id: string;
+  title: string;
+  description: string;
+  amount: string;
+  created_at: string;
+  transaction_hash: string;
+  contract_type: string;
+  tags: string[];
+  wallet_address: string;
+}
+
 const Dashboard = () => {
+  const [contracts, setContracts] = useState<Contract[]>([]);
   const [userAds, setUserAds] = useState<Ad[]>([]);
   const [activeView, setActiveView] = useState("dashboard");
   const [showNewBountyForm, setShowNewBountyForm] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
+  const [formData, setFormData] = useState<ContractFormData>({
+    title: "",
+    description: "",
+    price: "",
+    contractType: "bug_bounty",
+    tags: [],
+  });
+  const [tagInput, setTagInput] = useState("");
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserContracts = async () => {
+      if (currentUser?.address) {
+        try {
+          const { data, error } = await supabase
+            .from("contracts")
+            .select("*")
+            .eq("wallet_address", currentUser.address)
+            .order("created_at", { ascending: false });
+
+          if (error) {
+            throw error;
+          }
+
+          setContracts(data || []);
+        } catch (error) {
+          console.error("Erreur lors du chargement des contrats:", error);
+          setError("Erreur lors du chargement des contrats");
+        }
+      }
+    };
+
+    fetchUserContracts();
+  }, [currentUser?.address]);
+
+  const handleAddTag = () => {
+    if (tagInput && !formData.tags.includes(tagInput)) {
+      setFormData((prev) => ({
+        ...prev,
+        tags: [...prev.tags, tagInput],
+      }));
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
+    }));
+  };
 
   const handleNewBounty = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,32 +102,53 @@ const Dashboard = () => {
       if (typeof window.ethereum === "undefined") {
         throw new Error("MetaMask n'est pas installé !");
       }
+
       await window.ethereum.request({ method: "eth_requestAccounts" });
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(
         contractAddress,
-        BugBountyPlatformABI,
+        BugBountyPlatformABI, // Important: utiliser BugBountyPlatformABI directement
         signer
       );
 
-      const bountyAmount = ethers.parseUnits(price, 18);
-      const transaction = await contract.createQuest(title, bountyAmount);
-      setIsLoading(true);
-      await transaction.wait();
-      console.log("Contrat Bug Bounty créé avec succès !", transaction.hash);
+      const bountyAmount = ethers.parseUnits(formData.price, 18);
 
-      setTitle("");
-      setDescription("");
-      setPrice("");
+      // Utiliser depositFunds au lieu de createQuest
+      const transaction = await contract.depositFunds({
+        value: bountyAmount,
+      });
+
+      await transaction.wait();
+
+      // 2. Enregistrement dans Supabase
+      const { error: supabaseError } = await supabase.from("contracts").insert([
+        {
+          wallet_address: currentUser.address,
+          transaction_hash: transaction.hash,
+          title: formData.title,
+          description: formData.description,
+          contract_type: formData.contractType,
+          tags: formData.tags,
+          amount: formData.price,
+        },
+      ]);
+
+      if (supabaseError) throw supabaseError;
+
+      // Réinitialisation du formulaire
+      setFormData({
+        title: "",
+        description: "",
+        price: "",
+        contractType: "bug_bounty",
+        tags: [],
+      });
       setShowNewBountyForm(false);
-      setError(null);
-      alert("Contrat Bug Bounty créé avec succès !");
-    } catch (contractError: any) {
-      console.error("Erreur lors de l'appel du smart contract:", contractError);
-      setError(
-        contractError.message || "Erreur lors de la création du contrat."
-      );
+      alert("Contrat créé avec succès !");
+    } catch (error: any) {
+      console.error("Erreur:", error);
+      setError(error.message || "Erreur lors de la création du contrat");
     } finally {
       setIsLoading(false);
     }
@@ -71,9 +161,12 @@ const Dashboard = () => {
         <input
           id="title"
           type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={formData.title}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, title: e.target.value }))
+          }
           placeholder="Enter a descriptive title"
+          maxLength={255}
           required
         />
       </div>
@@ -81,10 +174,11 @@ const Dashboard = () => {
         <label htmlFor="description">Description</label>
         <textarea
           id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={formData.description}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, description: e.target.value }))
+          }
           placeholder="Describe the bug or vulnerability in detail"
-          required
         />
       </div>
       <div className="form-group">
@@ -92,11 +186,61 @@ const Dashboard = () => {
         <input
           id="price"
           type="number"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
+          value={formData.price}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, price: e.target.value }))
+          }
           placeholder="Enter the bounty reward"
           required
+          step="0.000001"
         />
+      </div>
+      <div className="form-group">
+        <label htmlFor="contractType">Contract Type</label>
+        <select
+          id="contractType"
+          value={formData.contractType}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, contractType: e.target.value }))
+          }
+        >
+          <option value="bug_bounty">Bug Bounty</option>
+          <option value="security_audit">Security Audit</option>
+          <option value="code_review">Code Review</option>
+        </select>
+      </div>
+      <div className="form-group">
+        <label htmlFor="tags">Tags</label>
+        <div className="tags-input-container">
+          <input
+            id="tags"
+            type="text"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            placeholder="Add tags"
+          />
+          <button
+            type="button"
+            onClick={handleAddTag}
+            className="add-tag-button"
+          >
+            Add Tag
+          </button>
+        </div>
+        <div className="tags-container">
+          {formData.tags.map((tag, index) => (
+            <span key={index} className="tag">
+              {tag}
+              <button
+                type="button"
+                onClick={() => handleRemoveTag(tag)}
+                className="remove-tag"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
       </div>
       <div className="form-buttons">
         <button
@@ -111,6 +255,39 @@ const Dashboard = () => {
         </button>
       </div>
     </form>
+  );
+
+  const renderBountiesList = () => (
+    <div className="ads-grid">
+      {contracts.map((contract) => (
+        <div key={contract.id} className="ad-card">
+          <h4>{contract.title}</h4>
+          <p>{contract.description}</p>
+          <p className="price">{contract.amount} ETH</p>
+          <div className="contract-tags">
+            {contract.tags?.map((tag, index) => (
+              <span key={index} className="tag">
+                {tag}
+              </span>
+            ))}
+          </div>
+          <div className="contract-details">
+            <p className="contract-type">{contract.contract_type}</p>
+            <p className="date">
+              {new Date(contract.created_at).toLocaleDateString()}
+            </p>
+          </div>
+          <a
+            href={`https://sepolia.etherscan.io/tx/${contract.transaction_hash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transaction-link"
+          >
+            View Transaction
+          </a>
+        </div>
+      ))}
+    </div>
   );
 
   const renderContent = () => {
@@ -140,16 +317,7 @@ const Dashboard = () => {
             </div>
             {showNewBountyForm && renderBountyForm()}
             {error && <div className="error-message">{error}</div>}
-            <div className="ads-grid">
-              {userAds.map((ad) => (
-                <div key={ad.id} className="ad-card">
-                  <h4>{ad.title}</h4>
-                  <p>{ad.description}</p>
-                  <p className="price">{ad.price}€</p>
-                  <p className="date">{ad.createdAt?.toLocaleDateString()}</p>
-                </div>
-              ))}
-            </div>
+            {renderBountiesList()}
           </div>
         );
       case "submissions":
