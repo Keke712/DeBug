@@ -1,18 +1,26 @@
 import React from "react";
 
 interface ButtonProps {
-  onClick: () => void;
   children: React.ReactNode;
-  variant?: "primary" | "secondary"; // Add more variants as needed
+  onClick?: () => void;
+  variant?: "primary" | "secondary";
+  className?: string;  // Ajout de la prop className
 }
 
-const Button: React.FC<ButtonProps> = ({
-  onClick,
-  children,
+const Button: React.FC<ButtonProps> = ({ 
+  children, 
+  onClick, 
   variant = "primary",
+  className = ""  // Valeur par défaut vide
 }) => {
-  // Add styling based on the variant
-  return <button onClick={onClick}>{children}</button>;
+  return (
+    <button
+      className={`button ${variant} ${className}`.trim()}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
 };
 
 export default Button;
