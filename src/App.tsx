@@ -1,11 +1,25 @@
-import { useState } from "react";
+import { useState, JSX } from "react";
 import "./App.css";
 import Header from "./components/Header";
 import Post from "./components/Post";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import PostAd from "./pages/PostAd";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
+
+const PrivateRoute = ({ children }: { children: JSX.Element }) => {
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  if (!currentUser?.address) {
+    return <Navigate to="/login" />;
+  }
+  return children;
+};
 
 function App() {
   return (
@@ -16,7 +30,22 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/post-ad" element={<PostAd />} />
+            <Route
+              path="/post-ad"
+              element={
+                <PrivateRoute>
+                  <PostAd />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
           </Routes>
         </main>
       </div>
