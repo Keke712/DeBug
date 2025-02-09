@@ -37,9 +37,6 @@ const Home = () => {
           <button className="home-button" onClick={() => navigate("/browse")}>
             Browse posts
           </button>
-          <button className="home-button" onClick={() => navigate("/post-ad")}>
-            Place a bug bounty
-          </button>
         </div>
       </div>
 

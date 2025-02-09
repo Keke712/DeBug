@@ -8,7 +8,6 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import PostAd from "./pages/PostAd";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
@@ -30,14 +29,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
-            <Route
-              path="/post-ad"
-              element={
-                <PrivateRoute>
-                  <PostAd />
-                </PrivateRoute>
-              }
-            />
             <Route
               path="/dashboard"
               element={
