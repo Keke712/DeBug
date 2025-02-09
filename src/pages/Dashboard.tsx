@@ -60,6 +60,7 @@ const Dashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [submits, setSubmits] = useState<{ [key: string]: Submit[] }>({});
   const [selectedContract, setSelectedContract] = useState<string | null>(null);
+  const [userSubmits, setUserSubmits] = useState<Submit[]>([]);
 
   useEffect(() => {
     const fetchUserContracts = async () => {
@@ -118,6 +119,33 @@ const Dashboard = () => {
 
     fetchSubmits();
   }, [contracts]);
+
+  useEffect(() => {
+    const fetchUserSubmits = async () => {
+      if (currentUser?.address) {
+        try {
+          const { data, error } = await supabase
+            .from("submits")
+            .select("*")
+            .eq("submitter_address", currentUser.address)
+            .order("created_at", { ascending: false });
+
+          if (error) {
+            console.error("Error fetching user submits:", error);
+            setError("Error fetching user submits");
+            return;
+          }
+
+          setUserSubmits(data || []);
+        } catch (error) {
+          console.error("Error fetching user submits:", error);
+          setError("Error fetching user submits");
+        }
+      }
+    };
+
+    fetchUserSubmits();
+  }, [currentUser?.address]);
 
   const handleAddTag = () => {
     if (tagInput && !formData.tags.includes(tagInput)) {
@@ -448,6 +476,26 @@ const Dashboard = () => {
     </div>
   );
 
+  const renderActiveSubmissions = () => (
+    <div className="active-submissions-container">
+      <h4>My Active Submissions ({userSubmits.length})</h4>
+      {userSubmits.length > 0 ? (
+        userSubmits.map((submit, index) => (
+          <div key={index} className="submit-item">
+            <p className="submit-description">{submit.description}</p>
+            <div className="submit-meta">
+              <span className="submit-date">
+                {new Date(submit.created_at).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p>No active submissions yet.</p>
+      )}
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeView) {
       case "dashboard":
@@ -480,9 +528,9 @@ const Dashboard = () => {
         );
       case "submissions":
         return (
-          <div>
+          <div className="user-submissions">
             <h3>Active Submissions</h3>
-            <p>No active submissions yet.</p>
+            {renderActiveSubmissions()}
           </div>
         );
       case "settings":

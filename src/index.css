@@ -606,6 +606,18 @@ button:focus-visible {
   background-color: #E57373; /* Rouge plus clair */
 }
 
+.active-submissions-container {
+  margin-top: 24px;
+  padding: 24px;
+  border-top: 2px solid #444;
+  border-radius: 12px;
+  background-color: #2a2a2a;
+}
+
+.user-submissions {
+  padding: 20px;
+}
+
 @media (prefers-color-scheme: light) {
   .dashboard-layout {
     background-color: #f5f5f5;
