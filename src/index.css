@@ -394,6 +394,62 @@ button:focus-visible {
   color: #ff4444;
 }
 
+.browse-container {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.contracts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.contract-card {
+  background-color: #2a2a2a;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.contract-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
+.contract-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.reward {
+  background: linear-gradient(45deg, #646cff, #8b92ff);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.description {
+  color: #a0a0a0;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.contract-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #444;
+}
+
 @media (prefers-color-scheme: light) {
   .dashboard-layout {
     background-color: #f5f5f5;

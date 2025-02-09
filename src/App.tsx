@@ -11,6 +11,7 @@ import {
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
+import Browse from "./pages/Browse";
 
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
@@ -29,6 +30,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/browse" element={<Browse />} />
             <Route
               path="/dashboard"
               element={
@@ -43,5 +45,5 @@ function App() {
     </Router>
   );
 }
-// htfytf
+
 export default App;
