@@ -1,31 +1,14 @@
 [
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "questId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "bugId",
-				"type": "uint256"
-			}
-		],
-		"name": "approveBug",
+		"inputs": [],
+		"name": "approveClaim",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_bountyTokenAddress",
-				"type": "address"
-			}
-		],
-		"stateMutability": "nonpayable",
+		"inputs": [],
+		"stateMutability": "payable",
 		"type": "constructor"
 	},
 	{
@@ -33,20 +16,8 @@
 		"inputs": [
 			{
 				"indexed": false,
-				"internalType": "uint256",
-				"name": "questId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "bugId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
 				"internalType": "address",
-				"name": "hacker",
+				"name": "recipient",
 				"type": "address"
 			},
 			{
@@ -56,177 +27,108 @@
 				"type": "uint256"
 			}
 		],
-		"name": "BountyPaid",
+		"name": "ClaimApproved",
 		"type": "event"
 	},
 	{
 		"anonymous": false,
 		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "questId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "bugId",
-				"type": "uint256"
-			},
 			{
 				"indexed": false,
 				"internalType": "address",
-				"name": "hacker",
+				"name": "recipient",
 				"type": "address"
 			}
 		],
-		"name": "BugApproved",
+		"name": "ClaimRejected",
 		"type": "event"
 	},
 	{
 		"anonymous": false,
 		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "questId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "bugId",
-				"type": "uint256"
-			},
 			{
 				"indexed": false,
 				"internalType": "address",
-				"name": "hacker",
+				"name": "recipient",
 				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "bugDescription",
-				"type": "string"
 			}
 		],
-		"name": "BugSubmitted",
+		"name": "ClaimRequested",
 		"type": "event"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "questDescription",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "bountyAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "createQuest",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "questId",
-				"type": "uint256"
-			}
-		],
-		"name": "deactivateQuest",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "questId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "company",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "questDescription",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "bountyAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "QuestCreated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "questId",
-				"type": "uint256"
-			}
-		],
-		"name": "QuestDeactivated",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "questId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "bugDescription",
-				"type": "string"
-			}
-		],
-		"name": "submitBug",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "questId",
-				"type": "uint256"
-			}
-		],
-		"name": "withdrawRemainingFunds",
+		"inputs": [],
+		"name": "closeBounty",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
 		"inputs": [],
-		"name": "bountyToken",
+		"name": "depositFunds",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "FundDeposited",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "rejectClaim",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "requestClaim",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "amount",
 		"outputs": [
 			{
-				"internalType": "contract IERC20",
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "isClaimable",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
 				"name": "",
 				"type": "address"
 			}
@@ -235,68 +137,13 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "questBugs",
+		"inputs": [],
+		"name": "pendingRecipient",
 		"outputs": [
 			{
 				"internalType": "address",
-				"name": "hacker",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "bugDescription",
-				"type": "string"
-			},
-			{
-				"internalType": "bool",
-				"name": "isApproved",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
 				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "quests",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "company",
 				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "questDescription",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "bountyAmount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "isActive",
-				"type": "bool"
 			}
 		],
 		"stateMutability": "view",

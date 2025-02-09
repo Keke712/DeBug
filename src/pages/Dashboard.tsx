@@ -4,7 +4,7 @@ import Sidebar from "../components/Sidebar";
 import { ethers } from "ethers";
 import BugBountyPlatformABI from "../components/BugBountyABI.json";
 
-const contractAddress = "0xd9145CCE52D386f254917e481eB44e9943F39138";
+const contractAddress = "0x688c0611a5691B7c1F09a694bf4ADfb456a58Cf7";
 
 interface Ad {
   id: string;
