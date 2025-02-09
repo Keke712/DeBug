@@ -21,14 +21,10 @@ interface Ad {
 interface Submit {
   id: number;
   contract_id: number;
-  wallet_address: string;
   description: string;
   status: "pending" | "accepted" | "rejected";
   created_at: string;
-  users?: {
-    full_name: string;
-    avatar_url: string;
-  };
+  wallet_address: string;
   contract?: {
     id: number;
     title: string;
@@ -179,10 +175,6 @@ const Dashboard = () => {
             status,
             wallet_address,
             transaction_hash
-          ),
-          users!inner (
-            full_name,
-            avatar_url
           )
         `
         )
@@ -250,21 +242,6 @@ const Dashboard = () => {
   const renderSubmission = (submit: Submit) => (
     <div key={submit.id} className="submission-item">
       <div className="submission-header">
-        <div className="submitter-info">
-          {submit.users?.avatar_url && (
-            <img
-              src={submit.users.avatar_url}
-              alt="Avatar"
-              className="submitter-avatar"
-            />
-          )}
-          <div>
-            <span className="submitter-name">
-              {submit.users?.full_name || "Anonymous"}
-            </span>
-            <span className="submitter-address">{submit.wallet_address}</span>
-          </div>
-        </div>
         <span className="submission-status">{submit.status}</span>
       </div>
       <div className="submission-content">

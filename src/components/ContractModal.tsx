@@ -20,6 +20,7 @@ interface Submit {
   contract_id: string;
   description: string;
   status: "pending" | "accepted" | "rejected";
+  submitter_address: string; // Ajout du champ submitter_address
 }
 
 const ContractModal: React.FC<ContractModalProps> = ({ contract, onClose }) => {
@@ -34,11 +35,22 @@ const ContractModal: React.FC<ContractModalProps> = ({ contract, onClose }) => {
     setError(null);
 
     try {
+      if (!window.ethereum) {
+        throw new Error("MetaMask is not installed!");
+      }
+
+      // Récupérer l'adresse MetaMask
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      const submitterAddress = accounts[0];
+
       const { error: submitError } = await supabase.from("submits").insert([
         {
           contract_id: contract.id,
           description: bugDescription,
           status: "pending",
+          submitter_address: submitterAddress,
         },
       ]);
 
