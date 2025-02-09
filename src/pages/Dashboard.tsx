@@ -196,6 +196,16 @@ const Dashboard = () => {
     }
   };
 
+  const handleApproveSubmit = async (submit: Submit) => {
+    // TODO: Implémenter la logique d'approbation
+    console.log("Approve submit:", submit);
+  };
+
+  const handleRejectSubmit = async (submit: Submit) => {
+    // TODO: Implémenter la logique de rejet
+    console.log("Reject submit:", submit);
+  };
+
   const renderBountyForm = () => (
     <form onSubmit={handleNewBounty} className="bounty-form">
       <div className="form-group">
@@ -312,6 +322,20 @@ const Dashboard = () => {
               <span className="submit-date">
                 {new Date(submit.created_at).toLocaleDateString()}
               </span>
+            </div>
+            <div className="submit-actions">
+              <button
+                className="approve-button"
+                onClick={() => handleApproveSubmit(submit)}
+              >
+                Approve
+              </button>
+              <button
+                className="reject-button"
+                onClick={() => handleRejectSubmit(submit)}
+              >
+                Reject
+              </button>
             </div>
           </div>
         ))}

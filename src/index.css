@@ -523,48 +523,87 @@ button:focus-visible {
 }
 
 .submits-container {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #444;
+  margin-top: 24px; /* Augmenter l'espacement */
+  padding: 24px; /* Augmenter le padding */
+  border-top: 2px solid #444; /* Augmenter l'épaisseur de la bordure */
+  border-radius: 12px; /* Ajouter un arrondi */
+  background-color: #2a2a2a; /* Ajouter une couleur de fond */
 }
 
 .submit-item {
-  background-color: #1a1a1a;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 12px;
+  background-color: #333; /* Assombrir légèrement */
+  border-radius: 12px; /* Augmenter l'arrondi */
+  padding: 20px; /* Augmenter le padding */
+  margin-bottom: 16px; /* Augmenter l'espacement */
 }
 
 .submit-description {
-  margin-bottom: 12px;
-  line-height: 1.5;
+  margin-bottom: 16px; /* Augmenter l'espacement */
+  line-height: 1.6; /* Améliorer la lisibilité */
+  font-size: 1.1em; /* Augmenter la taille de la police */
 }
 
 .submit-meta {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8em;
-  color: #a0a0a0;
+  font-size: 0.9em; /* Augmenter la taille de la police */
+  color: #bbb; /* Éclaircir la couleur */
 }
 
 .view-submits-button {
   width: 100%;
-  margin-top: 12px;
-  background-color: #444;
+  margin-top: 16px; /* Augmenter l'espacement */
+  background-color: #555; /* Assombrir légèrement */
   color: white;
   border: none;
-  padding: 8px;
-  border-radius: 4px;
+  padding: 12px; /* Augmenter le padding */
+  border-radius: 8px; /* Augmenter l'arrondi */
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .view-submits-button:hover {
-  background-color: #555;
+  background-color: #666; /* Assombrir davantage */
 }
 
 .submitter {
   font-family: monospace;
+  font-size: 1em; /* Augmenter la taille de la police */
+}
+
+.submit-actions {
+  display: flex;
+  justify-content: flex-end; /* Aligner les boutons à droite */
+  gap: 12px; /* Espacement entre les boutons */
+  margin-top: 16px; /* Augmenter l'espacement */
+}
+
+.approve-button,
+.reject-button {
+  padding: 10px 16px; /* Augmenter le padding */
+  border-radius: 8px; /* Augmenter l'arrondi */
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: 500; /* Ajouter un peu de graisse */
+  border: none; /* Supprimer la bordure */
+}
+
+.approve-button {
+  background-color: #4CAF50; /* Vert */
+  color: white;
+}
+
+.approve-button:hover {
+  background-color: #66BB6A; /* Vert plus clair */
+}
+
+.reject-button {
+  background-color: #F44336; /* Rouge */
+  color: white;
+}
+
+.reject-button:hover {
+  background-color: #E57373; /* Rouge plus clair */
 }
 
 @media (prefers-color-scheme: light) {
