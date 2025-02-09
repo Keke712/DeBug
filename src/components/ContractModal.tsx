@@ -16,6 +16,12 @@ interface ContractModalProps {
   onClose: () => void;
 }
 
+interface Submit {
+  contract_id: string;
+  description: string;
+  status: "pending" | "accepted" | "rejected";
+}
+
 const ContractModal: React.FC<ContractModalProps> = ({ contract, onClose }) => {
   const [bugDescription, setBugDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,21 +34,22 @@ const ContractModal: React.FC<ContractModalProps> = ({ contract, onClose }) => {
     setError(null);
 
     try {
-      // Ajouter le submit dans Supabase
-      const { error: submitError } = await supabase.from("submits").insert([
-        {
-          contract_id: contract.id, // Lier le submit au contrat
-          description: bugDescription,
-          wallet_address: currentUser.address,
-          status: "pending",
-        },
-      ]);
+      const newSubmit: Submit = {
+        contract_id: contract.id,
+        description: bugDescription,
+        status: "pending",
+      };
+
+      const { error: submitError } = await supabase
+        .from("submits")
+        .insert([newSubmit]);
 
       if (submitError) throw submitError;
 
       alert("Bug report submitted successfully!");
       onClose();
     } catch (err: any) {
+      console.error("Submit error:", err);
       setError(err.message || "Une erreur est survenue");
     } finally {
       setIsSubmitting(false);
