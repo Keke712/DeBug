@@ -120,6 +120,7 @@ const Dashboard = () => {
       const { error: supabaseError } = await supabase.from("contracts").insert({
         wallet_address: currentUser.address,
         transaction_hash: transactionHash,
+        contract_address: newContractAddress, // Ajouter l'adresse du contrat
         title: title,
         description: description,
         contract_type: "bug_bounty",
@@ -196,30 +197,62 @@ const Dashboard = () => {
       if (!window.ethereum) {
         throw new Error("Ethereum object not found, install MetaMask.");
       }
+
+      // Récupérer l'adresse du contrat déployé
+      const { data: contractData, error: contractError } = await supabase
+        .from("contracts")
+        .select("contract_address") // Utiliser contract_address au lieu de transaction_hash
+        .eq("id", submission.contract_id)
+        .single();
+
+      if (contractError) throw contractError;
+      if (!contractData?.contract_address)
+        throw new Error("Contract address not found");
+
       const provider = new ethers.BrowserProvider(window.ethereum as any);
       const signer = await provider.getSigner();
+
+      // Utiliser l'adresse du contrat pour l'interaction
       const contract = new ethers.Contract(
-        submission.contract_id.toString(),
+        contractData.contract_address, // Utiliser l'adresse du contrat
         BugBountyPlatformABI,
         signer
       );
 
-      // Valider le destinataire
-      await contract.validateRecipient(submission.wallet_address);
-      // Libérer la récompense
-      await contract.releaseBounty();
+      // Récupérer l'adresse du submitter
+      const { data: submitData, error: submitError } = await supabase
+        .from("submits")
+        .select("submitter_address")
+        .eq("id", submission.id)
+        .single();
 
-      // Mettre à jour le statut dans Supabase
-      const { error } = await supabase
-        .from("submissions")
+      if (submitError) throw submitError;
+      if (!submitData?.submitter_address)
+        throw new Error("Submitter address not found");
+
+      console.log("Validating recipient:", submitData.submitter_address);
+
+      // Valider le destinataire et libérer la récompense
+      const validateTx = await contract.validateRecipient(
+        submitData.submitter_address
+      );
+      await validateTx.wait();
+
+      const releaseTx = await contract.releaseBounty();
+      await releaseTx.wait();
+
+      // Mettre à jour le statut
+      const { error: updateError } = await supabase
+        .from("submits")
         .update({ status: "accepted" })
         .eq("id", submission.id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      // Recharger les soumissions
       await loadSubmissions(submission.contract_id);
+      alert("Bug bounty accepted and reward released!");
     } catch (error: any) {
+      console.error("Error accepting submission:", error);
       setError(error.message);
     }
   };
@@ -228,13 +261,19 @@ const Dashboard = () => {
   const handleRejectSubmission = async (submission: Submit) => {
     try {
       const { error } = await supabase
-        .from("submissions")
+        .from("submits") // Changement de "submissions" à "submits"
         .delete()
         .eq("id", submission.id);
 
       if (error) throw error;
+
+      // Recharger les soumissions après la suppression
       await loadSubmissions(submission.contract_id);
+
+      // Notification optionnelle
+      alert("Bug report rejected and removed");
     } catch (error: any) {
+      console.error("Error rejecting submission:", error);
       setError(error.message);
     }
   };
