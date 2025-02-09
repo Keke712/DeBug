@@ -34,15 +34,13 @@ const ContractModal: React.FC<ContractModalProps> = ({ contract, onClose }) => {
     setError(null);
 
     try {
-      const newSubmit: Submit = {
-        contract_id: contract.id,
-        description: bugDescription,
-        status: "pending",
-      };
-
-      const { error: submitError } = await supabase
-        .from("submits")
-        .insert([newSubmit]);
+      const { error: submitError } = await supabase.from("submits").insert([
+        {
+          contract_id: contract.id,
+          description: bugDescription,
+          status: "pending",
+        },
+      ]);
 
       if (submitError) throw submitError;
 
