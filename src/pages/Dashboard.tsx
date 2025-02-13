@@ -4,8 +4,7 @@ import { ethers } from "ethers";
 import { supabase } from "../supabase";
 import BountyFactoryABI from "../contracts/BountyFactoryABI.json";
 import BountyLogicABI from "../contracts/BountyDepositLogic.json";
-
-const FACTORY_ADDRESS = "0x44Ca9FcF6A75eAfA8Eae0eafe965efc0B39c002E"; // Remplacer par l'adresse de votre factory déployée
+import { FACTORY_ADDRESS } from "../constants/addresses";
 
 interface Ad {
   id: string;
