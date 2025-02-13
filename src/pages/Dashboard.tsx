@@ -1,14 +1,11 @@
-// Dashboard.tsx
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { ethers } from "ethers";
-import BugBountyPlatformABI from "../components/BugBountyABI.json";
-import { supabase } from "../supabase"; // Ajoutez cet import
-// Importer le Bytecode de votre contrat (assurez-vous de l'avoir compilé)
-// Vous devrez peut-être importer un fichier JSON contenant le bytecode
-// ou directement inclure la chaîne bytecode ici.
-// Pour cet exemple, je vais utiliser un placeholder, **REMPLACEZ-LE PAR VOTRE BYTECODE REEL**
-import BugBountyPlatformBytecode from "../components/BugBountyBytecode.json";
+import { supabase } from "../supabase";
+import BountyFactoryABI from "../contracts/BountyFactoryABI.json";
+import BountyLogicABI from "../contracts/BountyDepositLogic.json";
+
+const FACTORY_ADDRESS = "0x44Ca9FcF6A75eAfA8Eae0eafe965efc0B39c002E"; // Remplacer par l'adresse de votre factory déployée
 
 interface Ad {
   id: string;
@@ -84,43 +81,51 @@ const Dashboard = () => {
     setIsLoading(true);
     setError(null);
     try {
-      if (typeof window.ethereum === "undefined") {
-        throw new Error("MetaMask n'est pas installé !");
-      }
-      await window.ethereum.request({ method: "eth_requestAccounts" });
       if (!window.ethereum) {
-        throw new Error("Ethereum object not found, install MetaMask.");
+        throw new Error("MetaMask not installed!");
       }
+
+      await window.ethereum.request({ method: "eth_requestAccounts" });
       const provider = new ethers.BrowserProvider(window.ethereum as any);
       const signer = await provider.getSigner();
 
-      const factory = new ethers.ContractFactory(
-        BugBountyPlatformABI, // ABI de votre contrat
-        BugBountyPlatformBytecode.object, // Bytecode de votre contrat (CORRECTION : utiliser .object)
+      // Connect to the factory contract
+      const factory = new ethers.Contract(
+        FACTORY_ADDRESS,
+        BountyFactoryABI,
         signer
       );
 
-      const bountyAmount = ethers.parseEther(price); // Convertir le prix en ethers (BigNumber)
-      const contract = await factory.deploy({ value: bountyAmount }); // Déployer le contrat en envoyant de l'ether comme bounty
+      // Create new bounty through factory
+      const bountyAmount = ethers.parseEther(price);
+      const tx = await factory.createBounty({ value: bountyAmount });
+      const receipt = await tx.wait();
 
-      console.log(
-        "Transaction de déploiement en cours...",
-        contract.deploymentTransaction()?.hash
-      );
-      const deploymentReceipt = await contract.deploymentTransaction()?.wait();
-      if (!deploymentReceipt) {
-        throw new Error(
-          "Erreur lors de la confirmation du déploiement du contrat."
-        );
+      // Get the created bounty address from events
+      const bountyCreatedEvent = receipt.logs
+        .map((log: any) => {
+          try {
+            return factory.interface.parseLog({
+              topics: [...log.topics],
+              data: log.data,
+            });
+          } catch (e) {
+            return null;
+          }
+        })
+        .find((event: any) => event && event.name === "BountyCreated");
+
+      if (!bountyCreatedEvent) {
+        throw new Error("Could not find BountyCreated event");
       }
-      const newContractAddress = deploymentReceipt.contractAddress as string;
-      const transactionHash = deploymentReceipt.hash;
 
-      // Sauvegarder le contrat dans Supabase
+      const newContractAddress = bountyCreatedEvent.args[0];
+
+      // Save to Supabase
       const { error: supabaseError } = await supabase.from("contracts").insert({
         wallet_address: currentUser.address,
-        transaction_hash: transactionHash,
-        contract_address: newContractAddress, // Ajouter l'adresse du contrat
+        transaction_hash: receipt.hash,
+        contract_address: newContractAddress,
         title: title,
         description: description,
         contract_type: "bug_bounty",
@@ -130,31 +135,12 @@ const Dashboard = () => {
 
       if (supabaseError) throw supabaseError;
 
-      // Recharger les contrats
       await loadUserContracts();
-
-      console.log(
-        "Nouveau contrat Bug Bounty déployé à l'adresse:",
-        newContractAddress
-      );
-      alert(
-        `Contrat Bug Bounty déployé avec succès à l'adresse: ${newContractAddress}`
-      ); // ** IMPORTANT :  Ici, vous devriez enregistrer `newContractAddress` quelque part ** // ** pour pouvoir interagir avec ce contrat spécifique plus tard.  ** // ** Par exemple, vous pourriez l'enregistrer dans un état local, une base de données, etc. ** // ** Pour cet exemple simple, nous allons juste le logger et alert. **
-
-      setTitle("");
-      setDescription("");
-      setPrice("");
       setShowNewBountyForm(false);
-      setError(null);
-    } catch (deploymentError: any) {
-      console.error(
-        "Erreur lors du déploiement du smart contract:",
-        deploymentError
-      );
-      setError(
-        deploymentError.message ||
-          "Erreur lors de la création et du déploiement du contrat."
-      );
+      alert(`Bounty contract deployed at: ${newContractAddress}`);
+    } catch (error: any) {
+      console.error("Error deploying contract:", error);
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -195,44 +181,39 @@ const Dashboard = () => {
   const handleAcceptSubmission = async (submission: Submit) => {
     try {
       if (!window.ethereum) {
-        throw new Error("Ethereum object not found, install MetaMask.");
+        throw new Error("MetaMask not installed");
       }
 
-      // Récupérer l'adresse du contrat déployé
-      const { data: contractData, error: contractError } = await supabase
+      const { data: contractData } = await supabase
         .from("contracts")
-        .select("contract_address") // Utiliser contract_address au lieu de transaction_hash
+        .select("contract_address")
         .eq("id", submission.contract_id)
         .single();
 
-      if (contractError) throw contractError;
       if (!contractData?.contract_address)
         throw new Error("Contract address not found");
 
       const provider = new ethers.BrowserProvider(window.ethereum as any);
       const signer = await provider.getSigner();
 
-      // Utiliser l'adresse du contrat pour l'interaction
+      // Connect to the cloned contract instance using BountyLogicABI
       const contract = new ethers.Contract(
-        contractData.contract_address, // Utiliser l'adresse du contrat
-        BugBountyPlatformABI,
+        contractData.contract_address,
+        BountyLogicABI,
         signer
       );
 
-      // Récupérer l'adresse du submitter
-      const { data: submitData, error: submitError } = await supabase
+      // Get submitter address
+      const { data: submitData } = await supabase
         .from("submits")
         .select("submitter_address")
         .eq("id", submission.id)
         .single();
 
-      if (submitError) throw submitError;
       if (!submitData?.submitter_address)
         throw new Error("Submitter address not found");
 
-      console.log("Validating recipient:", submitData.submitter_address);
-
-      // Valider le destinataire et libérer la récompense
+      // Validate recipient and release bounty
       const validateTx = await contract.validateRecipient(
         submitData.submitter_address
       );
@@ -241,13 +222,10 @@ const Dashboard = () => {
       const releaseTx = await contract.releaseBounty();
       await releaseTx.wait();
 
-      // Mettre à jour le statut
-      const { error: updateError } = await supabase
+      await supabase
         .from("submits")
         .update({ status: "accepted" })
         .eq("id", submission.id);
-
-      if (updateError) throw updateError;
 
       await loadSubmissions(submission.contract_id);
       alert("Bug bounty accepted and reward released!");
