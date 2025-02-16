@@ -1,0 +1,61 @@
+.browse-container {
+  @apply mx-auto px-4 sm:px-6 lg:px-8 max-w-[2000px];
+}
+
+.browse-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(20em, 1fr));
+    justify-items: center;
+    justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.browse-list {
+  @apply flex flex-col gap-6 max-w-4xl mx-auto;
+}
+
+.view-switch-button {
+  background: var(--bg-dark);
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  transition: all 0.2s ease;
+  margin-bottom: 2.5rem; /* 40px */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.view-switch-button:focus,
+.view-switch-button:active {
+  border: none;
+  outline: none;
+}
+
+.view-switch-icons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+}
+
+.view-switch-separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.view-switch-icons svg {
+  transition: all 0.3s ease;
+  opacity: 0.5;
+}
+
+.view-switch-icons svg.active {
+  opacity: 1;
+  color: var(--primary-blue);
+  transform: scale(1.1);
+}
+
+.view-switch-button:hover svg:not(.active) {
+  opacity: 0.7;
+}

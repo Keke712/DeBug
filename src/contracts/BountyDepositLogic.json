@@ -38,17 +38,35 @@
 		"type": "event"
 	},
 	{
+		"anonymous": false,
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "_companyAddress",
-				"type": "address"
+				"indexed": false,
+				"internalType": "string",
+				"name": "title",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string[]",
+				"name": "tags",
+				"type": "string[]"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "website",
+				"type": "string"
 			}
 		],
-		"name": "initialize",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
+		"name": "MetadataUpdated",
+		"type": "event"
 	},
 	{
 		"anonymous": false,
@@ -62,26 +80,6 @@
 		],
 		"name": "RecipientValidated",
 		"type": "event"
-	},
-	{
-		"inputs": [],
-		"name": "releaseBounty",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_recipientAddress",
-				"type": "address"
-			}
-		],
-		"name": "validateRecipient",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	},
 	{
 		"inputs": [],
@@ -111,6 +109,47 @@
 	},
 	{
 		"inputs": [],
+		"name": "description",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getBountyMetadata",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "_title",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_description",
+				"type": "string"
+			},
+			{
+				"internalType": "string[]",
+				"name": "_tags",
+				"type": "string[]"
+			},
+			{
+				"internalType": "string",
+				"name": "_website",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "getContractBalance",
 		"outputs": [
 			{
@@ -133,6 +172,71 @@
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "index",
+				"type": "uint256"
+			}
+		],
+		"name": "getTag",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getTagsCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_companyAddress",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "_title",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_description",
+				"type": "string"
+			},
+			{
+				"internalType": "string[]",
+				"name": "_tags",
+				"type": "string[]"
+			},
+			{
+				"internalType": "string",
+				"name": "_website",
+				"type": "string"
+			}
+		],
+		"name": "initialize",
+		"outputs": [],
+		"stateMutability": "payable",
 		"type": "function"
 	},
 	{
@@ -169,6 +273,99 @@
 				"internalType": "bool",
 				"name": "",
 				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "releaseBounty",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "tags",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "title",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_title",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_description",
+				"type": "string"
+			},
+			{
+				"internalType": "string[]",
+				"name": "_tags",
+				"type": "string[]"
+			},
+			{
+				"internalType": "string",
+				"name": "_website",
+				"type": "string"
+			}
+		],
+		"name": "updateMetadata",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_recipientAddress",
+				"type": "address"
+			}
+		],
+		"name": "validateRecipient",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "website",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
 			}
 		],
 		"stateMutability": "view",

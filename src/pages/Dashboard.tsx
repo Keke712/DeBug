@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 import { supabase } from "../supabase";
 import BountyFactoryABI from "../contracts/BountyFactoryABI.json";
 import BountyLogicABI from "../contracts/BountyDepositLogic.json";
-import { FACTORY_ADDRESS } from "../constants/addresses";
+import { BOUNTY_FACTORY_ADDRESS } from "../constants/addresses";
 
 interface Ad {
   id: string;
@@ -48,6 +48,7 @@ const Dashboard = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [website, setWebsite] = useState(""); // Ajout du nouveau state
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,14 +91,21 @@ const Dashboard = () => {
 
       // Connect to the factory contract
       const factory = new ethers.Contract(
-        FACTORY_ADDRESS,
+        BOUNTY_FACTORY_ADDRESS,
         BountyFactoryABI,
         signer
       );
 
       // Create new bounty through factory
       const bountyAmount = ethers.parseEther(price);
-      const tx = await factory.createBounty({ value: bountyAmount });
+      // Mise à jour de l'appel au contrat avec le nouveau paramètre website
+      const tx = await factory.createBounty(
+        title,
+        description,
+        ["security", "ethereum"], // tags par défaut
+        website,
+        { value: bountyAmount }
+      );
       const receipt = await tx.wait();
 
       // Get the created bounty address from events
@@ -324,6 +332,16 @@ const Dashboard = () => {
           required
         />
              {" "}
+      </div>
+      <div className="form-group">
+        <label htmlFor="website">Project Website (optional)</label>
+        <input
+          id="website"
+          type="url"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+          placeholder="https://your-project.com"
+        />
       </div>
            {" "}
       <div className="form-buttons">

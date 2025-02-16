@@ -1,5 +1,29 @@
 [
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "bountyContract",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			}
+		],
+		"name": "createReport",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
 		"type": "constructor"
@@ -31,35 +55,23 @@
 			{
 				"indexed": true,
 				"internalType": "address",
+				"name": "reportContract",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
 				"name": "bountyContract",
 				"type": "address"
 			},
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "company",
+				"name": "reporter",
 				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "title",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "string[]",
-				"name": "tags",
-				"type": "string[]"
 			}
 		],
-		"name": "BountyCreated",
+		"name": "ReportCreated",
 		"type": "event"
 	},
 	{
@@ -70,121 +82,12 @@
 				"type": "uint256"
 			}
 		],
-		"name": "allBounties",
+		"name": "allReports",
 		"outputs": [
 			{
 				"internalType": "address",
 				"name": "",
 				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "bountiesByCompany",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_title",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_description",
-				"type": "string"
-			},
-			{
-				"internalType": "string[]",
-				"name": "_tags",
-				"type": "string[]"
-			},
-			{
-				"internalType": "string",
-				"name": "_website",
-				"type": "string"
-			}
-		],
-		"name": "createBounty",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getAllBounties",
-		"outputs": [
-			{
-				"internalType": "address[]",
-				"name": "",
-				"type": "address[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "company",
-				"type": "address"
-			}
-		],
-		"name": "getBountiesByCompany",
-		"outputs": [
-			{
-				"internalType": "address[]",
-				"name": "",
-				"type": "address[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "company",
-				"type": "address"
-			}
-		],
-		"name": "getBountiesByCompanyCount",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -192,12 +95,12 @@
 	},
 	{
 		"inputs": [],
-		"name": "getBountiesCount",
+		"name": "getAllReports",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "address[]",
 				"name": "",
-				"type": "uint256"
+				"type": "address[]"
 			}
 		],
 		"stateMutability": "view",
@@ -217,8 +120,145 @@
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "bountyContract",
+				"type": "address"
+			}
+		],
+		"name": "getReportsByBounty",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "bountyContract",
+				"type": "address"
+			}
+		],
+		"name": "getReportsByBountyCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "reporter",
+				"type": "address"
+			}
+		],
+		"name": "getReportsByReporter",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "reporter",
+				"type": "address"
+			}
+		],
+		"name": "getReportsByReporterCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getReportsCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "implementation",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "reportsByBounty",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "reportsByReporter",
 		"outputs": [
 			{
 				"internalType": "address",
