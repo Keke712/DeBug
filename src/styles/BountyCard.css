@@ -26,7 +26,7 @@
 
 /* Remove max-width constraints for grid view */
 .bounty-card:not(.list-view) {
-  width: 30em; /* Largeur fixe */
+  width: 25em; /* Largeur fixe */
   min-width: unset;
   max-width: unset;
 }

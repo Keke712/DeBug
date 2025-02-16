@@ -5,6 +5,7 @@ import { REPORT_FACTORY_ADDRESS } from "../constants/addresses";
 import ReportFactoryABI from "../contracts/ReportFactory.json";
 import BountyLogicABI from "../contracts/BountyDepositLogic.json";
 import "../styles/SubmitBugReport.css";
+import Toast from "../components/Toast";
 
 interface Contract {
   id: string;
@@ -21,6 +22,8 @@ const SubmitBugReport = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contract, setContract] = useState<Contract | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
 
   useEffect(() => {
@@ -92,10 +95,14 @@ const SubmitBugReport = () => {
       const tx = await reportFactory.createReport(cleanContractId, description);
       await tx.wait();
 
+      setToastMessage("Bug report submitted successfully!");
+      setShowToast(true);
       navigate(-1);
     } catch (err: any) {
       console.error("Submit error:", err);
       setError(err.message);
+      setToastMessage(`Error: ${err.message}`);
+      setShowToast(true);
     } finally {
       setIsLoading(false);
     }
@@ -103,6 +110,11 @@ const SubmitBugReport = () => {
 
   return (
     <div className="submit-report-container">
+      <Toast
+        message={toastMessage}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
       {contract && (
         <div className="contract-info">
           <h2>Submit Bug Report</h2>

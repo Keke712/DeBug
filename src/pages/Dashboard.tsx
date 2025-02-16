@@ -13,6 +13,7 @@ import {
 
 // Ajouter l'import du fichier CSS
 import "../styles/Dashboard.css";
+import Toast from "../components/Toast";
 
 interface Submit {
   id: number;
@@ -36,6 +37,8 @@ const Dashboard = () => {
   const [userContracts, setUserContracts] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<Submit[]>([]);
   const [expandedContract, setExpandedContract] = useState<number | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
   const navigate = useNavigate();
 
@@ -43,6 +46,16 @@ const Dashboard = () => {
   useEffect(() => {
     loadUserContracts();
   }, [currentUser]);
+
+  useEffect(() => {
+    // Vérifier s'il y a un message de création de bounty
+    const message = localStorage.getItem("bountyCreatedMessage");
+    if (message) {
+      setToastMessage(message);
+      setShowToast(true);
+      localStorage.removeItem("bountyCreatedMessage"); // Nettoyer le message
+    }
+  }, []);
 
   const loadUserContracts = async () => {
     try {
@@ -222,25 +235,61 @@ const Dashboard = () => {
     </div>
   );
 
+  // Ajouter ces fonctions pour calculer les statistiques
+  const calculateStats = () => {
+    const totalBounties = userContracts.length;
+    const totalAmount = userContracts.reduce(
+      (sum, contract) => sum + parseFloat(contract.amount),
+      0
+    );
+    const activeBounties = userContracts.filter(
+      (contract) => contract.status === "active"
+    ).length;
+
+    return {
+      totalBounties,
+      totalAmount: totalAmount.toFixed(3),
+      activeBounties,
+    };
+  };
+
+  // Modifier le case "dashboard" dans renderContent
   const renderContent = () => {
     switch (activeView) {
       case "dashboard":
+        const stats = calculateStats();
         return (
-          <>
-                        <h2>Dashboard Overview</h2>           {" "}
-            <div className="user-info">
-                            <p>Connected Address: {currentUser?.address}</p>   
-                     {" "}
+          <div className="dashboard-overview">
+            <div className="dashboard-header">
+              <div>
+                <h2>Dashboard Overview</h2>
+                <p className="user-info">
+                  Connected Address: {currentUser?.address}
+                </p>
+              </div>
             </div>
-                        {error && <div className="error-message">{error}</div>} 
-                   {" "}
-          </>
-        );
-      case "bounties":
-        return (
-          <div className="user-ads">
-            <div className="bounties-header">
-              <h3>My Bug Bounties</h3>
+            {error && <div className="error-message">{error}</div>}
+
+            <div className="dashboard-stats">
+              <div className="stat-card">
+                <div className="stat-value">{stats.totalBounties}</div>
+                <div className="stat-label">Total Bounties</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-value">{stats.totalAmount} ETH</div>
+                <div className="stat-label">Total Amount Invested</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-value">{stats.activeBounties}</div>
+                <div className="stat-label">Active Bounties</div>
+              </div>
+            </div>
+
+            <div className="create-bounty-card">
+              <div className="create-bounty-text">
+                <h3>Create New Bug Bounty</h3>
+                <p>Start securing your smart contracts today</p>
+              </div>
               <button
                 onClick={() => navigate("/create-bounty")}
                 className="new-bounty-button"
@@ -248,64 +297,67 @@ const Dashboard = () => {
                 Create a new contract
               </button>
             </div>
-            <div className="ads-list">
-              {userContracts.map((contract) => (
-                <div key={contract.id} className="ad-item">
-                  <div className="ad-header">
-                    <h4 className="ad-title">{contract.title}</h4>
-                    <span className="ad-amount">{contract.amount} ETH</span>
-                  </div>
-                  <p className="ad-description">{contract.description}</p>
-                  <div className="ad-details">
-                    <span>
-                      Created:{" "}
-                      {new Date(contract.created_at).toLocaleDateString()}
-                    </span>
-                    <span
-                      className={`ad-status ${contract.status.toLowerCase()}`}
-                    >
-                      {contract.status}
-                    </span>
-                  </div>
-                  <div className="ad-contract">
-                    Contract: {contract.transaction_hash.slice(0, 8)}...
-                    {contract.transaction_hash.slice(-6)}
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (expandedContract === contract.id) {
-                        setExpandedContract(null);
-                      } else {
-                        setExpandedContract(contract.id);
-                        if (
-                          typeof contract.id === "string" &&
-                          ethers.isAddress(contract.id)
-                        ) {
-                          loadSubmissions(contract.id);
-                        } else {
-                          setError("Invalid contract address format");
-                        }
-                      }
-                    }}
-                    className="view-submissions-button"
-                  >
-                    {expandedContract === contract.id
-                      ? "Hide Submissions"
-                      : "View Submissions"}
-                  </button>
-                  {expandedContract === contract.id &&
-                    submissions.length > 0 && (
-                      <div className="submissions-dropdown">
-                        {submissions.map(renderSubmission)}
-                      </div>
-                    )}
-                  {expandedContract === contract.id &&
-                    submissions.length === 0 && (
-                      <div className="no-submissions">No submissions yet</div>
-                    )}
-                </div>
-              ))}
+          </div>
+        );
+
+      case "bounties":
+        return (
+          <div className="user-ads">
+            <div className="bounties-header">
+              <h3>My Bug Bounties</h3>
             </div>
+            <table className="bounties-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Reward</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Contract</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userContracts.map((contract) => (
+                  <tr key={contract.id}>
+                    <td>{contract.title}</td>
+                    <td>{contract.amount} ETH</td>
+                    <td>
+                      <span
+                        className={`status-badge ${contract.status.toLowerCase()}`}
+                      >
+                        {contract.status}
+                      </span>
+                    </td>
+                    <td>
+                      {new Date(contract.created_at).toLocaleDateString()}
+                    </td>
+                    <td>
+                      {contract.transaction_hash.slice(0, 8)}...
+                      {contract.transaction_hash.slice(-6)}
+                    </td>
+                    <td>
+                      <button
+                        onClick={() =>
+                          navigate(`/bounty-reports/${contract.id}`)
+                        }
+                        className="view-reports-button"
+                      >
+                        View Reports
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {expandedContract && submissions.length > 0 && (
+              <div className="submissions-dropdown">
+                {submissions.map(renderSubmission)}
+              </div>
+            )}
+            {expandedContract && submissions.length === 0 && (
+              <div className="no-submissions">No submissions yet</div>
+            )}
           </div>
         );
       case "submissions":
@@ -329,6 +381,11 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-layout">
+      <Toast
+        message={toastMessage}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
             <Sidebar onViewChange={setActiveView} activeView={activeView} />   
        {" "}
       <div className="dashboard-content">

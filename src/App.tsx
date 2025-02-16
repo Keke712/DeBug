@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import Browse from "./pages/Browse";
 import SubmitBugReport from "./pages/SubmitBugReport";
 import CreateBounty from "./pages/CreateBounty";
+import BountyReports from "./pages/BountyReports";
 
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
@@ -52,6 +53,14 @@ function App() {
             <Route
               path="/submit-report/:contractId"
               element={<SubmitBugReport />}
+            />
+            <Route
+              path="/bounty-reports/:bountyId"
+              element={
+                <PrivateRoute>
+                  <BountyReports />
+                </PrivateRoute>
+              }
             />
           </Routes>
         </main>

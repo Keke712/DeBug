@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import BountyFactoryABI from "../contracts/BountyFactoryABI.json";
 import { BOUNTY_FACTORY_ADDRESS } from "../constants/addresses";
+import Toast from "../components/Toast";
 import "../styles/CreateBounty.css";
 
 const CreateBounty = () => {
@@ -12,6 +13,8 @@ const CreateBounty = () => {
   const [website, setWebsite] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,7 +64,11 @@ const CreateBounty = () => {
       }
 
       const newContractAddress = bountyCreatedEvent.args[0];
-      alert(`Bounty contract deployed at: ${newContractAddress}`);
+      // Stocker le message dans localStorage avant la redirection
+      localStorage.setItem(
+        "bountyCreatedMessage",
+        `Bounty contract deployed at: ${newContractAddress}`
+      );
       navigate("/dashboard");
     } catch (error: any) {
       console.error("Error deploying contract:", error);
@@ -73,6 +80,11 @@ const CreateBounty = () => {
 
   return (
     <div className="create-bounty-page">
+      <Toast
+        message={toastMessage}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
       <div className="create-bounty-container">
         <h2>Create Bug Bounty Program</h2>
         {error && (
@@ -107,7 +119,7 @@ const CreateBounty = () => {
             <input
               id="price"
               type="number"
-              step="0.01"
+              step="0.0001"
               min="0"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
