@@ -1,7 +1,7 @@
-import { useState, JSX } from "react";
+import { JSX } from "react";
 import "./App.css";
+import "./styles/Header.css";
 import Header from "./components/Header";
-import Post from "./components/Post";
 import {
   BrowserRouter as Router,
   Routes,
@@ -12,6 +12,8 @@ import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Browse from "./pages/Browse";
+import SubmitBugReport from "./pages/SubmitBugReport";
+import CreateBounty from "./pages/CreateBounty";
 
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
@@ -38,6 +40,18 @@ function App() {
                   <Dashboard />
                 </PrivateRoute>
               }
+            />
+            <Route
+              path="/create-bounty"
+              element={
+                <PrivateRoute>
+                  <CreateBounty />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/submit-report/:contractId"
+              element={<SubmitBugReport />}
             />
           </Routes>
         </main>

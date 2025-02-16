@@ -1,5 +1,6 @@
 import React from "react";
 import "../styles/BountyCard.css";
+import { Link } from "react-router-dom";
 
 interface BountyCardProps {
   contract: {
@@ -128,6 +129,26 @@ const BountyCard: React.FC<BountyCardProps> = ({
               Website
             </a>
           )}
+          <Link
+            to={`/submit-report/${contract.id}`}
+            className="action-button submit-report"
+          >
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 5V19M5 12H19"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Submit Report
+          </Link>
         </div>
       </div>
     </div>

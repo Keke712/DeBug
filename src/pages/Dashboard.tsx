@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { ethers } from "ethers";
-import { supabase } from "../supabase";
+import { useNavigate } from "react-router-dom";
 import BountyFactoryABI from "../contracts/BountyFactoryABI.json";
 import BountyLogicABI from "../contracts/BountyDepositLogic.json";
-import { BOUNTY_FACTORY_ADDRESS } from "../constants/addresses";
+import ReportFactoryABI from "../contracts/ReportFactory.json";
+import BugReportLogicABI from "../contracts/BugReportLogic.json";
+import {
+  BOUNTY_FACTORY_ADDRESS,
+  REPORT_FACTORY_ADDRESS,
+} from "../constants/addresses";
 
-interface Ad {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  createdAt: Date;
-}
+// Ajouter l'import du fichier CSS
+import "../styles/Dashboard.css";
 
 interface Submit {
   id: number;
@@ -30,31 +30,14 @@ interface Submit {
   };
 }
 
-interface Contract {
-  id: number;
-  wallet_address: string;
-  transaction_hash: string;
-  title: string;
-  description: string;
-  amount: number;
-  status: string;
-  created_at: string;
-}
-
 const Dashboard = () => {
-  const [userAds, setUserAds] = useState<Ad[]>([]);
   const [activeView, setActiveView] = useState("dashboard");
-  const [showNewBountyForm, setShowNewBountyForm] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [website, setWebsite] = useState(""); // Ajout du nouveau state
-  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [userContracts, setUserContracts] = useState<any[]>([]); // Ajoutez cet état
+  const [userContracts, setUserContracts] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<Submit[]>([]);
   const [expandedContract, setExpandedContract] = useState<number | null>(null);
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  const navigate = useNavigate();
 
   // Ajoutez cette fonction pour charger les contrats
   useEffect(() => {
@@ -63,176 +46,120 @@ const Dashboard = () => {
 
   const loadUserContracts = async () => {
     try {
-      const { data, error } = await supabase
-        .from("contracts")
-        .select("*")
-        .eq("wallet_address", currentUser?.address)
-        .order("created_at", { ascending: false });
+      if (!window.ethereum) throw new Error("MetaMask not installed!");
 
-      if (error) throw error;
-      setUserContracts(data || []);
-    } catch (error: any) {
-      console.error("Error loading contracts:", error.message);
-    }
-  };
-
-  const handleNewBounty = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    try {
-      if (!window.ethereum) {
-        throw new Error("MetaMask not installed!");
-      }
-
-      await window.ethereum.request({ method: "eth_requestAccounts" });
       const provider = new ethers.BrowserProvider(window.ethereum as any);
-      const signer = await provider.getSigner();
-
-      // Connect to the factory contract
       const factory = new ethers.Contract(
         BOUNTY_FACTORY_ADDRESS,
         BountyFactoryABI,
-        signer
+        provider
       );
 
-      // Create new bounty through factory
-      const bountyAmount = ethers.parseEther(price);
-      // Mise à jour de l'appel au contrat avec le nouveau paramètre website
-      const tx = await factory.createBounty(
-        title,
-        description,
-        ["security", "ethereum"], // tags par défaut
-        website,
-        { value: bountyAmount }
-      );
-      const receipt = await tx.wait();
+      const filter = factory.filters.BountyCreated(null, currentUser?.address);
+      const events = await factory.queryFilter(filter);
 
-      // Get the created bounty address from events
-      const bountyCreatedEvent = receipt.logs
-        .map((log: any) => {
-          try {
-            return factory.interface.parseLog({
-              topics: [...log.topics],
-              data: log.data,
-            });
-          } catch (e) {
-            return null;
-          }
-        })
-        .find((event: any) => event && event.name === "BountyCreated");
+      const contractPromises = events.map(async (event) => {
+        const [bountyAddress, creator, amount] = (event as ethers.EventLog)
+          .args;
+        const bountyContract = new ethers.Contract(
+          bountyAddress,
+          BountyLogicABI,
+          provider
+        );
 
-      if (!bountyCreatedEvent) {
-        throw new Error("Could not find BountyCreated event");
-      }
+        // Utiliser getBountyMetadata au lieu des appels individuels
+        const [metadata] = await Promise.all([
+          bountyContract.getBountyMetadata(),
+        ]);
 
-      const newContractAddress = bountyCreatedEvent.args[0];
-
-      // Save to Supabase
-      const { error: supabaseError } = await supabase.from("contracts").insert({
-        wallet_address: currentUser.address,
-        transaction_hash: receipt.hash,
-        contract_address: newContractAddress,
-        title: title,
-        description: description,
-        contract_type: "bug_bounty",
-        amount: Number(price),
-        status: "active",
+        return {
+          id: bountyAddress,
+          title: metadata[0], // Le titre est le premier élément
+          description: metadata[1], // La description est le deuxième élément
+          amount: ethers.formatEther(amount),
+          status: "active",
+          transaction_hash: event.transactionHash,
+          created_at: new Date().toISOString(),
+        };
       });
 
-      if (supabaseError) throw supabaseError;
-
-      await loadUserContracts();
-      setShowNewBountyForm(false);
-      alert(`Bounty contract deployed at: ${newContractAddress}`);
+      const resolvedContracts = await Promise.all(contractPromises);
+      setUserContracts(resolvedContracts);
     } catch (error: any) {
-      console.error("Error deploying contract:", error);
+      console.error("Error loading contracts:", error.message);
       setError(error.message);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   // Fonction pour charger les soumissions d'un contrat
-  const loadSubmissions = async (contractId: number) => {
+  const loadSubmissions = async (contractId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("submits")
-        .select(
-          `
-          *,
-          contract:contracts!contract_id (
-            id,
-            title,
-            description,
-            amount,
-            status,
-            wallet_address,
-            transaction_hash
-          )
-        `
-        )
-        .eq("contract_id", contractId)
-        .order("created_at", { ascending: false });
+      // Nettoyer l'ID du contrat pour s'assurer qu'il est au bon format
+      const cleanContractId = contractId.trim();
+      if (!ethers.isAddress(cleanContractId)) {
+        throw new Error("Invalid contract address");
+      }
 
-      if (error) throw error;
-      setSubmissions(data || []);
-      console.log("Submits loaded:", data); // Pour le débogage
+      const provider = new ethers.BrowserProvider(window.ethereum as any);
+      const reportFactory = new ethers.Contract(
+        REPORT_FACTORY_ADDRESS,
+        ReportFactoryABI,
+        provider
+      );
+
+      // Utiliser l'ID nettoyé
+      const reports = await reportFactory.getReportsByBounty(cleanContractId);
+
+      // Récupération des détails de chaque rapport
+      const reportsDetails = await Promise.all(
+        reports.map(async (reportAddress: string) => {
+          const reportContract = new ethers.Contract(
+            reportAddress,
+            BugReportLogicABI,
+            provider
+          );
+
+          const [description, status, reporter] = await Promise.all([
+            reportContract.getDescription(),
+            reportContract.getStatus(),
+            reportContract.getReporter(),
+          ]);
+
+          return {
+            id: reportAddress,
+            description,
+            status: ["PENDING", "CONFIRMED", "CANCELED"][status],
+            reporter,
+            contract_id: contractId,
+          };
+        })
+      );
+
+      setSubmissions(reportsDetails);
     } catch (error: any) {
-      console.error("Error loading submits:", error.message);
+      console.error("Error loading reports:", error);
       setError(error.message);
     }
   };
 
   // Fonction pour gérer la validation d'une soumission
-  const handleAcceptSubmission = async (submission: Submit) => {
+  const handleAcceptSubmission = async (submission: any) => {
     try {
-      if (!window.ethereum) {
-        throw new Error("MetaMask not installed");
-      }
-
-      const { data: contractData } = await supabase
-        .from("contracts")
-        .select("contract_address")
-        .eq("id", submission.contract_id)
-        .single();
-
-      if (!contractData?.contract_address)
-        throw new Error("Contract address not found");
+      if (!window.ethereum) throw new Error("MetaMask not installed!");
 
       const provider = new ethers.BrowserProvider(window.ethereum as any);
       const signer = await provider.getSigner();
 
-      // Connect to the cloned contract instance using BountyLogicABI
-      const contract = new ethers.Contract(
-        contractData.contract_address,
-        BountyLogicABI,
+      const reportContract = new ethers.Contract(
+        submission.id,
+        BugReportLogicABI,
         signer
       );
 
-      // Get submitter address
-      const { data: submitData } = await supabase
-        .from("submits")
-        .select("submitter_address")
-        .eq("id", submission.id)
-        .single();
-
-      if (!submitData?.submitter_address)
-        throw new Error("Submitter address not found");
-
-      // Validate recipient and release bounty
-      const validateTx = await contract.validateRecipient(
-        submitData.submitter_address
-      );
-      await validateTx.wait();
-
-      const releaseTx = await contract.releaseBounty();
-      await releaseTx.wait();
-
-      await supabase
-        .from("submits")
-        .update({ status: "accepted" })
-        .eq("id", submission.id);
+      const tx = await reportContract.confirmReport({
+        value: ethers.parseEther(submission.bountyAmount),
+      });
+      await tx.wait();
 
       await loadSubmissions(submission.contract_id);
       alert("Bug bounty accepted and reward released!");
@@ -243,20 +170,22 @@ const Dashboard = () => {
   };
 
   // Fonction pour rejeter une soumission
-  const handleRejectSubmission = async (submission: Submit) => {
+  const handleRejectSubmission = async (submission: any) => {
     try {
-      const { error } = await supabase
-        .from("submits") // Changement de "submissions" à "submits"
-        .delete()
-        .eq("id", submission.id);
+      const provider = new ethers.BrowserProvider(window.ethereum as any);
+      const signer = await provider.getSigner();
 
-      if (error) throw error;
+      const reportContract = new ethers.Contract(
+        submission.id,
+        BugReportLogicABI,
+        signer
+      );
 
-      // Recharger les soumissions après la suppression
+      const tx = await reportContract.cancelReport();
+      await tx.wait();
+
       await loadSubmissions(submission.contract_id);
-
-      // Notification optionnelle
-      alert("Bug report rejected and removed");
+      alert("Bug report rejected");
     } catch (error: any) {
       console.error("Error rejecting submission:", error);
       setError(error.message);
@@ -293,77 +222,6 @@ const Dashboard = () => {
     </div>
   );
 
-  const renderBountyForm = () => (
-    <form onSubmit={handleNewBounty} className="bounty-form">
-           {" "}
-      <div className="form-group">
-                <label htmlFor="title">Bounty Title</label>       {" "}
-        <input
-          id="title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter a descriptive title"
-          required
-        />
-             {" "}
-      </div>
-           {" "}
-      <div className="form-group">
-                <label htmlFor="description">Description</label>       {" "}
-        <textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Describe the bug or vulnerability in detail"
-          required
-        />
-             {" "}
-      </div>
-           {" "}
-      <div className="form-group">
-                <label htmlFor="price">Reward Amount (ETH)</label>       {" "}
-        <input
-          id="price"
-          type="number"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder="Enter the bounty reward"
-          required
-        />
-             {" "}
-      </div>
-      <div className="form-group">
-        <label htmlFor="website">Project Website (optional)</label>
-        <input
-          id="website"
-          type="url"
-          value={website}
-          onChange={(e) => setWebsite(e.target.value)}
-          placeholder="https://your-project.com"
-        />
-      </div>
-           {" "}
-      <div className="form-buttons">
-               {" "}
-        <button
-          type="button"
-          onClick={() => setShowNewBountyForm(false)}
-          className="cancel-button"
-        >
-                    Cancel        {" "}
-        </button>
-               {" "}
-        <button type="submit" className="submit-button" disabled={isLoading}>
-                    {isLoading ? "Creating Contract..." : "Create Contract"}   
-             {" "}
-        </button>
-             {" "}
-      </div>
-         {" "}
-    </form>
-  );
-
   const renderContent = () => {
     switch (activeView) {
       case "dashboard":
@@ -381,45 +239,52 @@ const Dashboard = () => {
       case "bounties":
         return (
           <div className="user-ads">
-                       {" "}
             <div className="bounties-header">
-                            <h3>My Bug Bounties</h3>             {" "}
+              <h3>My Bug Bounties</h3>
               <button
-                onClick={() => setShowNewBountyForm(true)}
+                onClick={() => navigate("/create-bounty")}
                 className="new-bounty-button"
-                disabled={isLoading}
               >
-                               {" "}
-                {isLoading ? "Creating Contract..." : "Create a new contract"} 
-                           {" "}
+                Create a new contract
               </button>
-                         {" "}
             </div>
-                        {showNewBountyForm && renderBountyForm()}           {" "}
-            {error && <div className="error-message">{error}</div>}           {" "}
-            <div className="ads-grid">
-                           {" "}
+            <div className="ads-list">
               {userContracts.map((contract) => (
-                <div key={contract.id} className="ad-card">
-                                    <h4>{contract.title}</h4>                 {" "}
-                  <p>{contract.description}</p>                 {" "}
-                  <p className="price">{contract.amount} ETH</p>               
-                   {" "}
-                  <p className="date">
-                    {new Date(contract.created_at).toLocaleDateString()}
-                  </p>
-                                   {" "}
-                  <p className="status">Status: {contract.status}</p>
-                  <p className="address">
-                    Contract: {contract.transaction_hash}
-                  </p>
+                <div key={contract.id} className="ad-item">
+                  <div className="ad-header">
+                    <h4 className="ad-title">{contract.title}</h4>
+                    <span className="ad-amount">{contract.amount} ETH</span>
+                  </div>
+                  <p className="ad-description">{contract.description}</p>
+                  <div className="ad-details">
+                    <span>
+                      Created:{" "}
+                      {new Date(contract.created_at).toLocaleDateString()}
+                    </span>
+                    <span
+                      className={`ad-status ${contract.status.toLowerCase()}`}
+                    >
+                      {contract.status}
+                    </span>
+                  </div>
+                  <div className="ad-contract">
+                    Contract: {contract.transaction_hash.slice(0, 8)}...
+                    {contract.transaction_hash.slice(-6)}
+                  </div>
                   <button
                     onClick={() => {
                       if (expandedContract === contract.id) {
                         setExpandedContract(null);
                       } else {
                         setExpandedContract(contract.id);
-                        loadSubmissions(contract.id);
+                        if (
+                          typeof contract.id === "string" &&
+                          ethers.isAddress(contract.id)
+                        ) {
+                          loadSubmissions(contract.id);
+                        } else {
+                          setError("Invalid contract address format");
+                        }
                       }
                     }}
                     className="view-submissions-button"
@@ -440,7 +305,6 @@ const Dashboard = () => {
                     )}
                 </div>
               ))}
-                         {" "}
             </div>
           </div>
         );

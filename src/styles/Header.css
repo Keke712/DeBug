@@ -1,0 +1,119 @@
+
+
+
+/* HEADER */
+
+.header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 1rem 2rem;
+background: rgba(33, 42, 62, 0.95);
+backdrop-filter: blur(10px);
+box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+position: relative;
+z-index: 1000;
+}
+
+.header-buttons {
+display: flex;
+gap: 1rem;
+align-items: center;
+}
+
+.header-logo {
+height: 3rem;
+cursor: pointer;
+}
+
+.header-logo-container {
+display: flex;
+align-items: center;
+gap: 1rem;
+cursor: pointer;
+}
+
+.header-title {
+color: #fff;
+font-size: 1.5rem;
+font-weight: bold;
+}
+
+/* DROPDOWN MENU */
+
+.dropdown {
+position: relative;
+display: inline-block;
+}
+
+.dropdown-toggle {
+cursor: pointer;
+}
+
+.dropdown-menu {
+position: absolute;
+top: 100%;
+right: 0;
+background: rgba(33, 42, 62, 0.95);
+backdrop-filter: blur(10px);
+border: 1px solid rgba(255, 255, 255, 0.1);
+border-radius: 8px;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+min-width: 200px;
+z-index: 1001;
+margin-top: 0.5rem;
+}
+
+.dropdown-item {
+padding: 12px 15px;
+cursor: pointer;
+color: #e4e9f2;
+transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+background-color: rgba(65, 122, 219, 0.15);
+}
+
+.dropdown-item.address {
+border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+font-family: monospace;
+word-break: break-all;
+cursor: default;
+color: #8899ac;
+}
+
+.address-container {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 8px;
+white-space: nowrap;
+width: 100%;
+}
+
+.address-text {
+flex: 1;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+font-size: 0.9rem;
+}
+
+.copy-button {
+flex-shrink: 0;
+padding: 4px 8px;
+background: none;
+border: none;
+cursor: pointer;
+font-size: 1rem;
+color: #8899ac;
+transition: color 0.2s ease;
+border-radius: 4px;
+}
+
+.copy-button:hover {
+color: #e4e9f2;
+background: rgba(65, 122, 219, 0.15);
+}

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import metamaskLogo from "../assets/metamask.png";
-import { supabase } from "../supabase";
+import "../styles/Login.css";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,32 +16,6 @@ const Login = () => {
           method: "eth_requestAccounts",
         });
         const account = accounts[0];
-
-        // Vérifier si l'utilisateur existe déjà dans Supabase
-        const { data: existingUser } = await supabase
-          .from("users")
-          .select()
-          .eq("wallet_address", account)
-          .single();
-
-        if (!existingUser) {
-          // Créer un nouvel utilisateur dans Supabase
-          const { error } = await supabase.from("users").insert([
-            {
-              wallet_address: account,
-              created_at: new Date().toISOString(),
-              last_login: new Date().toISOString(),
-            },
-          ]);
-
-          if (error) throw error;
-        } else {
-          // Mettre à jour la dernière connexion
-          await supabase
-            .from("users")
-            .update({ last_login: new Date().toISOString() })
-            .eq("wallet_address", account);
-        }
 
         // Sauvegarder les informations dans le localStorage
         localStorage.setItem(
