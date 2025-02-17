@@ -1,5 +1,11 @@
 import React from "react";
-import { FaBug, FaClipboardList, FaCog, FaChartLine } from "react-icons/fa";
+import {
+  FaBug,
+  FaClipboardList,
+  FaCode,
+  FaChartLine,
+  FaGlobe,
+} from "react-icons/fa";
 
 interface MenuItem {
   id: number;
@@ -35,9 +41,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onViewChange, activeView }) => {
     },
     {
       id: 4,
-      title: "Settings",
-      icon: <FaCog className="menu-icon" />,
-      view: "settings",
+      title: "Public",
+      icon: <FaGlobe className="menu-icon" />, // Changé de FaClipboardList à FaGlobe
+      view: "public",
+    },
+    {
+      id: 5,
+      title: "Developers",
+      icon: <FaCode className="menu-icon" />,
+      view: "developers",
     },
   ];
 

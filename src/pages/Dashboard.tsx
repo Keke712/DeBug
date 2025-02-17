@@ -40,6 +40,7 @@ const Dashboard = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [userSubmissions, setUserSubmissions] = useState<any[]>([]);
+  const [deniedReports, setDeniedReports] = useState<any[]>([]);
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
   const navigate = useNavigate();
 
@@ -47,6 +48,7 @@ const Dashboard = () => {
   useEffect(() => {
     loadUserContracts();
     loadUserSubmissions();
+    loadDeniedReports();
   }, [currentUser]);
 
   useEffect(() => {
@@ -340,6 +342,67 @@ const Dashboard = () => {
     };
   };
 
+  // Ajouter cette nouvelle fonction pour charger les rapports refusés
+  const loadDeniedReports = async () => {
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum as any);
+      const reportFactory = new ethers.Contract(
+        REPORT_FACTORY_ADDRESS,
+        ReportFactoryABI,
+        provider
+      );
+
+      // Charger tous les événements de création de rapports
+      const filter = reportFactory.filters.ReportCreated();
+      const events = await reportFactory.queryFilter(filter);
+
+      const reportPromises = events.map(async (event: any) => {
+        const [reportAddress] = event.args;
+
+        const reportContract = new ethers.Contract(
+          reportAddress,
+          BugReportLogicABI,
+          provider
+        );
+
+        const [description, status, reporter, bountyAddr] = await Promise.all([
+          reportContract.getDescription(),
+          reportContract.getStatus(),
+          reportContract.getReporter(),
+          reportContract.bountyContract(),
+        ]);
+
+        // Ne retourner que si le statut est CANCELED (2)
+        if (status !== 2) return null;
+
+        // Obtenir les détails du bounty
+        const bountyContract = new ethers.Contract(
+          bountyAddr,
+          BountyLogicABI,
+          provider
+        );
+        const metadata = await bountyContract.getBountyMetadata();
+
+        return {
+          id: reportAddress,
+          description,
+          reporter,
+          bountyTitle: metadata[0],
+          bountyAddress: bountyAddr,
+          created_at: new Date(event.block.timestamp * 1000).toISOString(),
+        };
+      });
+
+      const resolvedReports = (await Promise.all(reportPromises)).filter(
+        (report): report is any => report !== null
+      );
+      setDeniedReports(resolvedReports);
+    } catch (error: any) {
+      console.error("Error loading denied reports:", error);
+      setError(error.message);
+    }
+  };
+
   // Modifier le case "dashboard" dans renderContent
   const renderContent = () => {
     switch (activeView) {
@@ -534,6 +597,120 @@ const Dashboard = () => {
             <p>Account settings will be available soon.</p>         {" "}
           </div>
         );
+      case "public":
+        return (
+          <div className="public-content">
+            <div className="dashboard-header">
+              <h3>Public Activity</h3>
+            </div>
+            <div className="public-stats">
+              <div className="stat-card">
+                <div className="stat-value">{userContracts.length}</div>
+                <div className="stat-label">Open Bounties</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-value">{deniedReports.length}</div>
+                <div className="stat-label">Denied Reports</div>
+              </div>
+            </div>
+            <div className="public-activity">
+              <h4>Recently Denied Reports</h4>
+              <table className="bounties-table">
+                <thead>
+                  <tr>
+                    <th>Bounty Title</th>
+                    <th>Description</th>
+                    <th>Reporter</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {deniedReports.map((report) => (
+                    <tr key={report.id}>
+                      <td>{report.bountyTitle}</td>
+                      <td>{report.description.slice(0, 50)}...</td>
+                      <td>
+                        {report.reporter.slice(0, 6)}...
+                        {report.reporter.slice(-4)}
+                      </td>
+                      <td>
+                        {new Date(report.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {deniedReports.length === 0 && (
+                <p className="no-data">No denied reports found</p>
+              )}
+            </div>
+          </div>
+        );
+      case "developers":
+        return (
+          <div className="developers-content">
+            <div className="dashboard-header">
+              <h3>Developers Resources</h3>
+            </div>
+            <div className="contracts-info">
+              <div className="contract-card">
+                <h4>Bounty Factory</h4>
+                <p>Contract that manages the creation of new bug bounties</p>
+                <a
+                  href={`https://sepolia.etherscan.io/address/${BOUNTY_FACTORY_ADDRESS}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="etherscan-link"
+                >
+                  View on Etherscan
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                </a>
+              </div>
+              <div className="contract-card">
+                <h4>Report Factory</h4>
+                <p>Contract that manages the creation of bug reports</p>
+                <a
+                  href={`https://sepolia.etherscan.io/address/${REPORT_FACTORY_ADDRESS}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="etherscan-link"
+                >
+                  View on Etherscan
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
