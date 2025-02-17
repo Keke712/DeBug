@@ -15,7 +15,12 @@ const Home = () => {
   return (
     <div className="home-container">
       <div className="welcome-title">
-        <p className="welcome-label">Welcome to DeBug</p>
+        <p className="welcome-label">
+          <div className="container">
+            <span className="prefix">De</span>
+            <span className="suffix">Bug</span>
+          </div>
+        </p>
         <div className="welcome-buttons">
           <button className="home-button" onClick={() => navigate("/browse")}>
             Browse posts
@@ -24,15 +29,21 @@ const Home = () => {
       </div>
 
       <div className="about-section">
-        <h2>About Us</h2>
+        <div className="about-header">
+          <h2>About Us</h2>
+          <div className="header-line"></div>
+        </div>
         <div className="specialties">
           <div className="specialty-card">
             <h3>Cybersecurity</h3>
-            <p>Specialized in vulnerability detection and resolution</p>
+            <p>
+              Advanced vulnerability detection and resolution for enterprise
+              systems
+            </p>
           </div>
           <div className="specialty-card">
             <h3>Web 3</h3>
-            <p>Securing blockchain transactions and smart contracts</p>
+            <p>Blockchain security and smart contract protection solutions</p>
           </div>
         </div>
       </div>
