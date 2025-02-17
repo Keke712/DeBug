@@ -13,7 +13,7 @@
 .bounty-card {
   background: var(--bg-card);
   border: none;
-  border-radius: 16px;
+  border-radius: 2em;
   padding: 24px;
   position: relative;
   transition: all 0.2s ease;
@@ -50,10 +50,11 @@
 }
 
 .bounty-card.list-view {
-  margin-bottom: 3em;
+  margin-left: 3em;
+  margin-bottom: 2em;
   flex-direction: row;
   align-items: flex-start;
-  max-width: 100%;
+  max-width: 90%;
 }
 
 .bounty-content {
