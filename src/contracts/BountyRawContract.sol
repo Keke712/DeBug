@@ -9,31 +9,47 @@ contract BountyDepositLogic {
     bool public recipientValidated;
     bool private initialized;
     
-    string public title;
-    string public description;
-    string[] public tags;
-    string public website;
+    bytes32 public title;
+    bytes32 public description;
+    bytes32[] public tags;
+    bytes32 public website;
     
     event DepositReceived(address sender, uint amount);
     event RecipientValidated(address recipient);
     event BountyReleased(address recipient, uint amount);
-    event MetadataUpdated(string title, string description, string[] tags, string website);
+    event MetadataUpdated(bytes32 title, bytes32 description, bytes32[] tags, bytes32 website);
 
-    modifier initializer() {
+    function _checkInitializer() internal {
         require(!initialized, "Already initialized");
-        _;
         initialized = true;
+    }
+
+    function _checkOnlyCompany() internal view {
+        require(msg.sender == companyAddress, "Only company can call");
+    }
+
+    function _checkFundsDeposited() internal view {
+        require(address(this).balance > 0, "No funds deposited");
+    }
+
+    function _checkRecipientNotValidated() internal view {
+        require(!recipientValidated, "Recipient already validated");
+    }
+
+    function _checkRecipientIsValidated() internal view {
+        require(recipientValidated, "Recipient not validated yet");
     }
 
     function initialize(
         address _companyAddress,
-        string memory _title,
-        string memory _description,
-        string[] memory _tags,
-        string memory _website
-    ) external payable initializer {
+        bytes32 _title,
+        bytes32 _description,
+        bytes32[] memory _tags,
+        bytes32 _website
+    ) external payable {
+        _checkInitializer();
         require(_companyAddress != address(0), "Invalid company address");
-        require(bytes(_title).length > 0, "Title cannot be empty");
+        require(_title != bytes32(0), "Title cannot be empty");
         
         companyAddress = _companyAddress;
         bountyAmount = msg.value;
@@ -48,48 +64,12 @@ contract BountyDepositLogic {
         emit MetadataUpdated(title, description, tags, website);
     }
 
-    modifier onlyCompany() {
-        require(msg.sender == companyAddress, "Only company can call");
-        _;
-    }
-
-    modifier fundsDeposited() {
-        require(address(this).balance > 0, "No funds deposited");
-        _;
-    }
-
-    modifier recipientNotValidated() {
-        require(!recipientValidated, "Recipient already validated");
-        _;
-    }
-
-    modifier recipientIsValidated() {
-        require(recipientValidated, "Recipient not validated yet");
-        _;
-    }
-
-    function updateMetadata(
-        string memory _title,
-        string memory _description,
-        string[] memory _tags,
-        string memory _website
-    ) external onlyCompany {
-        require(bytes(_title).length > 0, "Title cannot be empty");
-        
-        title = _title;
-        description = _description;
-        tags = _tags;
-        website = _website;
-        
-        emit MetadataUpdated(title, description, tags, website);
-    }
-
     function validateRecipient(address _recipientAddress) 
         external 
-        onlyCompany 
-        recipientNotValidated 
-        fundsDeposited 
     {
+        _checkOnlyCompany();
+        _checkRecipientNotValidated();
+        _checkFundsDeposited();
         require(_recipientAddress != address(0), "Invalid recipient address");
         recipientAddress = _recipientAddress;
         recipientValidated = true;
@@ -98,10 +78,10 @@ contract BountyDepositLogic {
 
     function releaseBounty() 
         external 
-        onlyCompany 
-        recipientIsValidated 
-        fundsDeposited 
     {
+        _checkOnlyCompany();
+        _checkRecipientIsValidated();
+        _checkFundsDeposited();
         require(recipientAddress != address(0), "Invalid recipient address");
         uint amountToRelease = address(this).balance;
         
@@ -112,10 +92,10 @@ contract BountyDepositLogic {
     }
 
     function getBountyMetadata() external view returns (
-        string memory _title,
-        string memory _description,
-        string[] memory _tags,
-        string memory _website
+        bytes32 _title,
+        bytes32 _description,
+        bytes32[] memory _tags,
+        bytes32 _website
     ) {
         return (title, description, tags, website);
     }
@@ -124,7 +104,7 @@ contract BountyDepositLogic {
         return tags.length;
     }
 
-    function getTag(uint index) external view returns (string memory) {
+    function getTag(uint index) external view returns (bytes32) {
         require(index < tags.length, "Tag index out of bounds");
         return tags[index];
     }
@@ -143,9 +123,9 @@ contract BountyDepositLogic {
 
     function confirmBugReport(address reportAddress) 
         external 
-        onlyCompany 
-        fundsDeposited 
     {
+        _checkOnlyCompany();
+        _checkFundsDeposited();
         uint amountToRelease = address(this).balance;
         (bool success, ) = reportAddress.call(
             abi.encodeWithSignature("confirmReport()")
@@ -155,8 +135,8 @@ contract BountyDepositLogic {
 
     function cancelBugReport(address reportAddress) 
         external 
-        onlyCompany 
     {
+        _checkOnlyCompany();
         (bool success, ) = reportAddress.call(
             abi.encodeWithSignature("cancelReport()")
         );
@@ -175,8 +155,8 @@ contract BountyFactory {
         address indexed bountyContract, 
         address indexed company, 
         uint amount,
-        string title,
-        string[] tags
+        bytes32 title,
+        bytes32[] tags
     );
     
     constructor() {
@@ -184,13 +164,13 @@ contract BountyFactory {
     }
     
     function createBounty(
-        string memory _title,
-        string memory _description,
-        string[] memory _tags,
-        string memory _website
+        bytes32 _title,
+        bytes32 _description,
+        bytes32[] memory _tags,
+        bytes32 _website
     ) external payable returns (address) {
         require(msg.value > 0, "Must send ETH");
-        require(bytes(_title).length > 0, "Title cannot be empty");
+        require(_title != bytes32(0), "Title cannot be empty");
         
         address clone = implementation.clone();
         BountyDepositLogic(payable(clone)).initialize{value: msg.value}(

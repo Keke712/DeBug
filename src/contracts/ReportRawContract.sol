@@ -5,40 +5,38 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 contract BugReportLogic {
     enum Status { Pending, Confirmed, Canceled }
     
-    address public bountyContract;
-    address public reporter;
-    string public description;
+    address public bountyContract;  
+    address public reporter;        
+    bytes32 public description;    
     Status public status;
     bool private initialized;
 
-    event BugReported(address indexed reporter, address indexed bountyContract, string description);
+    event BugReported(address indexed reporter, address indexed bountyContract, bytes32 description);
     event ReportConfirmed(address indexed reporter, uint amount);
     event ReportCanceled(address indexed reporter);
 
-    modifier initializer() {
+    function _checkInitializer() internal {
         require(!initialized, "Already initialized");
-        _;
         initialized = true;
     }
 
-    modifier onlyBountyContract() {
+    function _checkOnlyBountyContract() internal view {
         require(msg.sender == bountyContract, "Only bounty contract can call");
-        _;
     }
 
-    modifier whenPending() {
+    function _checkWhenPending() internal view {
         require(status == Status.Pending, "Report must be pending");
-        _;
     }
 
     function initialize(
         address _reporter,
         address _bountyContract,
-        string memory _description
-    ) external initializer {
+        bytes32 _description
+    ) external {
+        _checkInitializer();
         require(_bountyContract != address(0), "Invalid bounty contract");
         require(_reporter != address(0), "Invalid reporter address");
-        require(bytes(_description).length > 0, "Description cannot be empty");
+        require(_description != bytes32(0), "Description cannot be empty");
         
         reporter = _reporter;
         bountyContract = _bountyContract;
@@ -48,7 +46,9 @@ contract BugReportLogic {
         emit BugReported(reporter, bountyContract, description);
     }
 
-    function confirmReport() external payable onlyBountyContract whenPending {
+    function confirmReport() external payable {
+        _checkOnlyBountyContract();
+        _checkWhenPending();
         status = Status.Confirmed;
         
         (bool success, ) = reporter.call{value: msg.value}("");
@@ -57,7 +57,9 @@ contract BugReportLogic {
         emit ReportConfirmed(reporter, msg.value);
     }
 
-    function cancelReport() external onlyBountyContract whenPending {
+    function cancelReport() external {
+        _checkOnlyBountyContract();
+        _checkWhenPending();
         status = Status.Canceled;
         emit ReportCanceled(reporter);
     }
@@ -71,7 +73,7 @@ contract BugReportLogic {
         return reporter;
     }
 
-    function getDescription() external view returns (string memory) {
+    function getDescription() external view returns (bytes32) {
         return description;
     }
 }
@@ -96,7 +98,7 @@ contract ReportFactory {
     
     function createReport(
         address bountyContract,
-        string calldata description
+        bytes32 description
     ) external returns (address) {
         address clone = implementation.clone();
         BugReportLogic(clone).initialize(msg.sender, bountyContract, description);

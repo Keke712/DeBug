@@ -48,53 +48,19 @@
 			},
 			{
 				"indexed": false,
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "title",
-				"type": "string"
+				"type": "bytes32"
 			},
 			{
 				"indexed": false,
-				"internalType": "string[]",
+				"internalType": "bytes32[]",
 				"name": "tags",
-				"type": "string[]"
+				"type": "bytes32[]"
 			}
 		],
 		"name": "BountyCreated",
 		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_title",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_description",
-				"type": "string"
-			},
-			{
-				"internalType": "string[]",
-				"name": "_tags",
-				"type": "string[]"
-			},
-			{
-				"internalType": "string",
-				"name": "_website",
-				"type": "string"
-			}
-		],
-		"name": "createBounty",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "payable",
-		"type": "function"
 	},
 	{
 		"inputs": [
@@ -137,6 +103,40 @@
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "_title",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "bytes32",
+				"name": "_description",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "bytes32[]",
+				"name": "_tags",
+				"type": "bytes32[]"
+			},
+			{
+				"internalType": "bytes32",
+				"name": "_website",
+				"type": "bytes32"
+			}
+		],
+		"name": "createBounty",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "payable",
 		"type": "function"
 	},
 	{

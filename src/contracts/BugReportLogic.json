@@ -16,9 +16,9 @@
 			},
 			{
 				"indexed": false,
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "description",
-				"type": "string"
+				"type": "bytes32"
 			}
 		],
 		"name": "BugReported",
@@ -88,9 +88,9 @@
 		"name": "description",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "",
-				"type": "string"
+				"type": "bytes32"
 			}
 		],
 		"stateMutability": "view",
@@ -101,9 +101,9 @@
 		"name": "getDescription",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "",
-				"type": "string"
+				"type": "bytes32"
 			}
 		],
 		"stateMutability": "view",
@@ -148,9 +148,9 @@
 				"type": "address"
 			},
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "_description",
-				"type": "string"
+				"type": "bytes32"
 			}
 		],
 		"name": "initialize",

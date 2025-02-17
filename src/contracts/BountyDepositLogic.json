@@ -42,27 +42,27 @@
 		"inputs": [
 			{
 				"indexed": false,
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "title",
-				"type": "string"
+				"type": "bytes32"
 			},
 			{
 				"indexed": false,
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "description",
-				"type": "string"
+				"type": "bytes32"
 			},
 			{
 				"indexed": false,
-				"internalType": "string[]",
+				"internalType": "bytes32[]",
 				"name": "tags",
-				"type": "string[]"
+				"type": "bytes32[]"
 			},
 			{
 				"indexed": false,
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "website",
-				"type": "string"
+				"type": "bytes32"
 			}
 		],
 		"name": "MetadataUpdated",
@@ -138,9 +138,9 @@
 		"name": "description",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "",
-				"type": "string"
+				"type": "bytes32"
 			}
 		],
 		"stateMutability": "view",
@@ -151,24 +151,24 @@
 		"name": "getBountyMetadata",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "_title",
-				"type": "string"
+				"type": "bytes32"
 			},
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "_description",
-				"type": "string"
+				"type": "bytes32"
 			},
 			{
-				"internalType": "string[]",
+				"internalType": "bytes32[]",
 				"name": "_tags",
-				"type": "string[]"
+				"type": "bytes32[]"
 			},
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "_website",
-				"type": "string"
+				"type": "bytes32"
 			}
 		],
 		"stateMutability": "view",
@@ -211,9 +211,9 @@
 		"name": "getTag",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "",
-				"type": "string"
+				"type": "bytes32"
 			}
 		],
 		"stateMutability": "view",
@@ -240,24 +240,24 @@
 				"type": "address"
 			},
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "_title",
-				"type": "string"
+				"type": "bytes32"
 			},
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "_description",
-				"type": "string"
+				"type": "bytes32"
 			},
 			{
-				"internalType": "string[]",
+				"internalType": "bytes32[]",
 				"name": "_tags",
-				"type": "string[]"
+				"type": "bytes32[]"
 			},
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "_website",
-				"type": "string"
+				"type": "bytes32"
 			}
 		],
 		"name": "initialize",
@@ -322,9 +322,9 @@
 		"name": "tags",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "",
-				"type": "string"
+				"type": "bytes32"
 			}
 		],
 		"stateMutability": "view",
@@ -335,40 +335,12 @@
 		"name": "title",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "",
-				"type": "string"
+				"type": "bytes32"
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_title",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_description",
-				"type": "string"
-			},
-			{
-				"internalType": "string[]",
-				"name": "_tags",
-				"type": "string[]"
-			},
-			{
-				"internalType": "string",
-				"name": "_website",
-				"type": "string"
-			}
-		],
-		"name": "updateMetadata",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -389,9 +361,9 @@
 		"name": "website",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "bytes32",
 				"name": "",
-				"type": "string"
+				"type": "bytes32"
 			}
 		],
 		"stateMutability": "view",
