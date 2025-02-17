@@ -80,6 +80,14 @@ const Dashboard = () => {
           provider
         );
 
+        // Obtenir le nombre de rapports pour ce contrat
+        const reportFactory = new ethers.Contract(
+          REPORT_FACTORY_ADDRESS,
+          ReportFactoryABI,
+          provider
+        );
+        const reports = await reportFactory.getReportsByBounty(bountyAddress);
+
         // Utiliser getBountyMetadata au lieu des appels individuels
         const [metadata] = await Promise.all([
           bountyContract.getBountyMetadata(),
@@ -93,6 +101,7 @@ const Dashboard = () => {
           status: "active",
           transaction_hash: event.transactionHash,
           created_at: new Date().toISOString(),
+          submissionCount: reports.length, // Ajout du nombre de soumissions
         };
       });
 
@@ -314,6 +323,7 @@ const Dashboard = () => {
                   <th>Status</th>
                   <th>Created</th>
                   <th>Contract</th>
+                  <th>Reports</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -336,6 +346,7 @@ const Dashboard = () => {
                       {contract.transaction_hash.slice(0, 8)}...
                       {contract.transaction_hash.slice(-6)}
                     </td>
+                    <td>{contract.submissionCount}</td>
                     <td>
                       <button
                         onClick={() =>
