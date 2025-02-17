@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
 import ReportFactoryABI from "../contracts/ReportFactory.json";
 import BugReportLogicABI from "../contracts/BugReportLogic.json";
+import BountyLogicABI from "../contracts/BountyDepositLogic.json";
 import { REPORT_FACTORY_ADDRESS } from "../constants/addresses";
 import "../styles/BountyReports.css";
 
@@ -80,14 +81,17 @@ const BountyReports: React.FC = () => {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum as any);
       const signer = await provider.getSigner();
-      const reportContract = new ethers.Contract(
-        reportId,
-        BugReportLogicABI,
+
+      const bountyContract = new ethers.Contract(
+        bountyId!,
+        BountyLogicABI,
         signer
       );
 
-      const tx = await reportContract.confirmReport();
+      // Call confirmBugReport instead of direct report interaction
+      const tx = await bountyContract.confirmBugReport(reportId);
       await tx.wait();
+
       await loadReports();
     } catch (error: any) {
       setError(error.message);
@@ -98,14 +102,17 @@ const BountyReports: React.FC = () => {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum as any);
       const signer = await provider.getSigner();
-      const reportContract = new ethers.Contract(
-        reportId,
-        BugReportLogicABI,
+
+      const bountyContract = new ethers.Contract(
+        bountyId!,
+        BountyLogicABI,
         signer
       );
 
-      const tx = await reportContract.cancelReport();
+      // Call cancelBugReport instead of direct report interaction
+      const tx = await bountyContract.cancelBugReport(reportId);
       await tx.wait();
+
       await loadReports();
     } catch (error: any) {
       setError(error.message);

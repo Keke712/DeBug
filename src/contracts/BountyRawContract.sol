@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
@@ -10,7 +9,6 @@ contract BountyDepositLogic {
     bool public recipientValidated;
     bool private initialized;
     
-    // Nouvelles variables pour les métadonnées
     string public title;
     string public description;
     string[] public tags;
@@ -41,7 +39,6 @@ contract BountyDepositLogic {
         bountyAmount = msg.value;
         recipientValidated = false;
         
-        // Initialisation des métadonnées
         title = _title;
         description = _description;
         tags = _tags;
@@ -71,7 +68,6 @@ contract BountyDepositLogic {
         _;
     }
 
-    // Fonction pour mettre à jour les métadonnées
     function updateMetadata(
         string memory _title,
         string memory _description,
@@ -115,7 +111,6 @@ contract BountyDepositLogic {
         emit BountyReleased(recipientAddress, amountToRelease);
     }
 
-    // Getters pour les métadonnées
     function getBountyMetadata() external view returns (
         string memory _title,
         string memory _description,
@@ -134,7 +129,6 @@ contract BountyDepositLogic {
         return tags[index];
     }
 
-    // Getters existants
     function getContractBalance() external view returns (uint) {
         return address(this).balance;
     }
@@ -145,6 +139,28 @@ contract BountyDepositLogic {
 
     function isRecipientValidated() external view returns (bool) {
         return recipientValidated;
+    }
+
+    function confirmBugReport(address reportAddress) 
+        external 
+        onlyCompany 
+        fundsDeposited 
+    {
+        uint amountToRelease = address(this).balance;
+        (bool success, ) = reportAddress.call(
+            abi.encodeWithSignature("confirmReport()")
+        );
+        require(success, "Report confirmation failed");
+    }
+
+    function cancelBugReport(address reportAddress) 
+        external 
+        onlyCompany 
+    {
+        (bool success, ) = reportAddress.call(
+            abi.encodeWithSignature("cancelReport()")
+        );
+        require(success, "Report cancellation failed");
     }
 }
 
@@ -192,7 +208,6 @@ contract BountyFactory {
         return clone;
     }
 
-    // Getters existants
     function getAllBounties() external view returns (address[] memory) {
         return allBounties;
     }

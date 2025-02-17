@@ -95,6 +95,19 @@
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "reportAddress",
+				"type": "address"
+			}
+		],
+		"name": "cancelBugReport",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "companyAddress",
 		"outputs": [
@@ -105,6 +118,19 @@
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "reportAddress",
+				"type": "address"
+			}
+		],
+		"name": "confirmBugReport",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{

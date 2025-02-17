@@ -65,6 +65,40 @@
 	{
 		"inputs": [
 			{
+				"internalType": "string",
+				"name": "_title",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_description",
+				"type": "string"
+			},
+			{
+				"internalType": "string[]",
+				"name": "_tags",
+				"type": "string[]"
+			},
+			{
+				"internalType": "string",
+				"name": "_website",
+				"type": "string"
+			}
+		],
+		"name": "createBounty",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
@@ -103,40 +137,6 @@
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_title",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_description",
-				"type": "string"
-			},
-			{
-				"internalType": "string[]",
-				"name": "_tags",
-				"type": "string[]"
-			},
-			{
-				"internalType": "string",
-				"name": "_website",
-				"type": "string"
-			}
-		],
-		"name": "createBounty",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "payable",
 		"type": "function"
 	},
 	{

@@ -14,6 +14,7 @@ import {
 // Ajouter l'import du fichier CSS
 import "../styles/Dashboard.css";
 import Toast from "../components/Toast";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 interface Submit {
   id: number;
@@ -44,22 +45,39 @@ const Dashboard = () => {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
   const navigate = useNavigate();
 
-  // Ajoutez cette fonction pour charger les contrats
-  useEffect(() => {
-    loadUserContracts();
-    loadUserSubmissions();
-    loadDeniedReports();
-  }, [currentUser]);
-
+  // Supprimer le useEffect général qui charge tout
   useEffect(() => {
     // Vérifier s'il y a un message de création de bounty
     const message = localStorage.getItem("bountyCreatedMessage");
     if (message) {
       setToastMessage(message);
       setShowToast(true);
-      localStorage.removeItem("bountyCreatedMessage"); // Nettoyer le message
+      localStorage.removeItem("bountyCreatedMessage");
     }
   }, []);
+
+  // Ajouter un useEffect qui réagit aux changements d'onglets
+  useEffect(() => {
+    const loadTabData = async () => {
+      switch (activeView) {
+        case "dashboard":
+          await loadUserContracts();
+          break;
+        case "bounties":
+          await loadUserContracts();
+          break;
+        case "submissions":
+          await loadUserSubmissions();
+          break;
+        case "public":
+          await loadDeniedReports();
+          break;
+        // Les autres onglets n'ont pas besoin de chargement initial
+      }
+    };
+
+    loadTabData();
+  }, [activeView]);
 
   const loadUserContracts = async () => {
     try {
@@ -407,6 +425,19 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (activeView) {
       case "dashboard":
+        if (!userContracts.length) {
+          return (
+            <div className="dashboard-overview">
+              <div className="dashboard-header">
+                <h2>Dashboard Overview</h2>
+                <p className="user-info">
+                  Connected Address: {currentUser?.address}
+                </p>
+              </div>
+              <LoadingSpinner />
+            </div>
+          );
+        }
         const stats = calculateStats();
         return (
           <div className="dashboard-overview">
@@ -485,6 +516,16 @@ const Dashboard = () => {
         );
 
       case "bounties":
+        if (!userContracts.length) {
+          return (
+            <div className="user-ads">
+              <div className="dashboard-header">
+                <h3>My Bug Bounties</h3>
+              </div>
+              <LoadingSpinner />
+            </div>
+          );
+        }
         return (
           <div className="user-ads">
             <div className="dashboard-header">
@@ -547,6 +588,16 @@ const Dashboard = () => {
           </div>
         );
       case "submissions":
+        if (!userSubmissions.length) {
+          return (
+            <div className="user-submissions">
+              <div className="dashboard-header">
+                <h3>Active Submissions</h3>
+              </div>
+              <LoadingSpinner />
+            </div>
+          );
+        }
         return (
           <div className="user-submissions">
             <div className="dashboard-header">
@@ -588,13 +639,6 @@ const Dashboard = () => {
             {userSubmissions.length === 0 && (
               <div className="no-submissions">No submissions found</div>
             )}
-          </div>
-        );
-      case "settings":
-        return (
-          <div>
-                        <h3>Settings</h3>           {" "}
-            <p>Account settings will be available soon.</p>         {" "}
           </div>
         );
       case "public":
