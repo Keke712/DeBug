@@ -39,12 +39,14 @@ const Dashboard = () => {
   const [expandedContract, setExpandedContract] = useState<number | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [userSubmissions, setUserSubmissions] = useState<any[]>([]);
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
   const navigate = useNavigate();
 
   // Ajoutez cette fonction pour charger les contrats
   useEffect(() => {
     loadUserContracts();
+    loadUserSubmissions();
   }, [currentUser]);
 
   useEffect(() => {
@@ -98,7 +100,7 @@ const Dashboard = () => {
           title: metadata[0], // Le titre est le premier élément
           description: metadata[1], // La description est le deuxième élément
           amount: ethers.formatEther(amount),
-          status: "active",
+          status: "Active", // Changé de "active" à "Active"
           transaction_hash: event.transactionHash,
           created_at: new Date().toISOString(),
           submissionCount: reports.length, // Ajout du nombre de soumissions
@@ -252,7 +254,7 @@ const Dashboard = () => {
       0
     );
     const activeBounties = userContracts.filter(
-      (contract) => contract.status === "active"
+      (contract) => contract.status === "Active" // Changé de "active" à "Active"
     ).length;
 
     return {
@@ -260,6 +262,66 @@ const Dashboard = () => {
       totalAmount: totalAmount.toFixed(3),
       activeBounties,
     };
+  };
+
+  // Ajouter cette nouvelle fonction pour charger les soumissions de l'utilisateur
+  const loadUserSubmissions = async () => {
+    try {
+      if (!window.ethereum || !currentUser?.address) {
+        throw new Error("MetaMask not connected!");
+      }
+
+      const provider = new ethers.BrowserProvider(window.ethereum as any);
+      const reportFactory = new ethers.Contract(
+        REPORT_FACTORY_ADDRESS,
+        ReportFactoryABI,
+        provider
+      );
+
+      // Get all reports submitted by the current user
+      const userReports = await reportFactory.getReportsByReporter(
+        currentUser.address
+      );
+
+      const submissionPromises = userReports.map(
+        async (reportAddress: string) => {
+          const reportContract = new ethers.Contract(
+            reportAddress,
+            BugReportLogicABI,
+            provider
+          );
+
+          const [description, status, bountyAddr] = await Promise.all([
+            reportContract.getDescription(),
+            reportContract.getStatus(),
+            reportContract.bountyContract(), // Utiliser la propriété publique au lieu d'une fonction
+          ]);
+
+          // Get bounty details
+          const bountyContract = new ethers.Contract(
+            bountyAddr,
+            BountyLogicABI,
+            provider
+          );
+          const metadata = await bountyContract.getBountyMetadata();
+
+          return {
+            id: reportAddress,
+            description,
+            status: ["Pending", "Confirmed", "Rejected"][status],
+            bountyTitle: metadata[0],
+            bountyAddress: bountyAddr,
+            created_at: new Date().toISOString(),
+          };
+        }
+      );
+
+      const resolvedSubmissions = await Promise.all(submissionPromises);
+      setUserSubmissions(resolvedSubmissions);
+    } catch (error: any) {
+      console.error("Error loading user submissions:", error);
+      setError(error.message);
+    }
   };
 
   // Modifier le case "dashboard" dans renderContent
@@ -312,7 +374,7 @@ const Dashboard = () => {
       case "bounties":
         return (
           <div className="user-ads">
-            <div className="bounties-header">
+            <div className="dashboard-header">
               <h3>My Bug Bounties</h3>
             </div>
             <table className="bounties-table">
@@ -373,9 +435,46 @@ const Dashboard = () => {
         );
       case "submissions":
         return (
-          <div>
-                        <h3>Active Submissions</h3>           {" "}
-            <p>No active submissions yet.</p>         {" "}
+          <div className="user-submissions">
+            <div className="dashboard-header">
+              <h3>Active Submissions</h3>
+            </div>
+            <table className="bounties-table">
+              <thead>
+                <tr>
+                  <th>Bounty Title</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Submitted On</th>
+                  <th>Contract</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userSubmissions.map((submission) => (
+                  <tr key={submission.id}>
+                    <td>{submission.bountyTitle}</td>
+                    <td>{submission.description.slice(0, 50)}...</td>
+                    <td>
+                      <span
+                        className={`status-badge ${submission.status.toLowerCase()}`}
+                      >
+                        {submission.status}
+                      </span>
+                    </td>
+                    <td>
+                      {new Date(submission.created_at).toLocaleDateString()}
+                    </td>
+                    <td>
+                      {submission.bountyAddress.slice(0, 8)}...
+                      {submission.bountyAddress.slice(-6)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {userSubmissions.length === 0 && (
+              <div className="no-submissions">No submissions found</div>
+            )}
           </div>
         );
       case "settings":

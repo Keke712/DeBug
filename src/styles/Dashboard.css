@@ -93,11 +93,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
-}
-
-.dashboard-header h2 {
-  margin: 0 0 8px 0;
+  margin-bottom: 20px;
 }
 
 .user-info {
@@ -121,13 +117,6 @@
 
 .new-bounty-button:hover {
   transform: translateY(-2px);
-}
-
-.bounties-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
 }
 
 .bounty-form {
