@@ -324,6 +324,22 @@ const Dashboard = () => {
     }
   };
 
+  // Dans le composant Dashboard, ajoutez cette fonction après calculateStats
+  const calculateReportStats = () => {
+    const totalSubmitted = userSubmissions.length;
+    const acceptedSubmissions = userSubmissions.filter(
+      (submission) => submission.status === "Confirmed"
+    ).length;
+    // Nous supposons que chaque bounty acceptée rapporte le montant spécifié
+    const totalEarned = "N/A"; // Cette valeur devrait être calculée à partir des récompenses réelles
+
+    return {
+      totalSubmitted,
+      acceptedSubmissions,
+      totalEarned,
+    };
+  };
+
   // Modifier le case "dashboard" dans renderContent
   const renderContent = () => {
     switch (activeView) {
@@ -366,6 +382,40 @@ const Dashboard = () => {
                 className="new-bounty-button"
               >
                 Create a new contract
+              </button>
+            </div>
+
+            <div className="report-stats">
+              <div className="report-stat-card">
+                <div className="report-stat-value">
+                  {calculateReportStats().totalSubmitted}
+                </div>
+                <div className="report-stat-label">Total Reports Submitted</div>
+              </div>
+              <div className="report-stat-card">
+                <div className="report-stat-value">
+                  {calculateReportStats().acceptedSubmissions}
+                </div>
+                <div className="report-stat-label">Reports Accepted</div>
+              </div>
+              <div className="report-stat-card">
+                <div className="report-stat-value">
+                  {calculateReportStats().totalEarned}
+                </div>
+                <div className="report-stat-label">Total ETH Earned</div>
+              </div>
+            </div>
+
+            <div className="browse-bounties-card">
+              <div className="create-bounty-text">
+                <h3>Browse Active Bounties</h3>
+                <p>Find and report vulnerabilities to earn rewards</p>
+              </div>
+              <button
+                onClick={() => navigate("/browse")}
+                className="browse-button"
+              >
+                Browse bounties
               </button>
             </div>
           </div>
