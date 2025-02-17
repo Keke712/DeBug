@@ -11,11 +11,24 @@ const CreateBounty = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [website, setWebsite] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const navigate = useNavigate();
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+      setTags([...tags, tagInput.trim()]);
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +53,7 @@ const CreateBounty = () => {
       const tx = await factory.createBounty(
         title,
         description,
-        ["security", "ethereum"],
+        tags.length > 0 ? tags : ["security", "ethereum"],
         website,
         { value: bountyAmount }
       );
@@ -136,6 +149,45 @@ const CreateBounty = () => {
               onChange={(e) => setWebsite(e.target.value)}
               placeholder="https://example.com"
             />
+          </div>
+          <div className="form-group">
+            <label htmlFor="tags">Tags</label>
+            <div className="tags-container">
+              {tags.map((tag, index) => (
+                <span key={index} className="tag">
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="tag-remove"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="tag-input-container">
+              <input
+                id="tags"
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                placeholder="Add tags (press Enter)"
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddTag();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleAddTag}
+                className="tag-add-button"
+              >
+                Add
+              </button>
+            </div>
           </div>
           <div className="form-buttons">
             <button
