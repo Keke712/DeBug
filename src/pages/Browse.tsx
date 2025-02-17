@@ -29,6 +29,11 @@ const Browse = () => {
     null
   );
   const [isGridView, setIsGridView] = useState(true);
+  const [amountFilter, setAmountFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
+  const [tagFilter, setTagFilter] = useState("all");
+  const [hasWebsiteFilter, setHasWebsiteFilter] = useState(false);
+  const [reputationFilter, setReputationFilter] = useState("all");
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
 
   useEffect(() => {
@@ -96,12 +101,162 @@ const Browse = () => {
     fetchContracts();
   }, [currentUser.address]);
 
+  const getAllUniqueTags = () => {
+    const tags = new Set<string>();
+    contracts.forEach((contract) => {
+      contract.tags.forEach((tag) => tags.add(tag));
+    });
+    return Array.from(tags);
+  };
+
+  const filteredContracts = contracts.filter((contract) => {
+    let passesFilters = true;
+
+    if (amountFilter !== "all") {
+      const amount = parseFloat(contract.amount);
+      switch (amountFilter) {
+        case "0-1":
+          passesFilters = amount <= 1;
+          break;
+        case "1-5":
+          passesFilters = amount > 1 && amount <= 5;
+          break;
+        case "5+":
+          passesFilters = amount > 5;
+          break;
+      }
+    }
+
+    if (dateFilter !== "all") {
+      const createdDate = new Date(contract.created_at);
+      const now = new Date();
+      const daysDiff =
+        (now.getTime() - createdDate.getTime()) / (1000 * 3600 * 24);
+
+      switch (dateFilter) {
+        case "today":
+          passesFilters = passesFilters && daysDiff <= 1;
+          break;
+        case "week":
+          passesFilters = passesFilters && daysDiff <= 7;
+          break;
+        case "month":
+          passesFilters = passesFilters && daysDiff <= 30;
+          break;
+      }
+    }
+
+    if (tagFilter !== "all") {
+      passesFilters = passesFilters && contract.tags.includes(tagFilter);
+    }
+
+    if (hasWebsiteFilter) {
+      passesFilters = passesFilters && Boolean(contract.website);
+    }
+
+    if (reputationFilter !== "all") {
+      // Cette logique sera implémentée quand la feature de réputation sera disponible
+      // Pour l'instant, on laisse passer tous les contrats
+    }
+
+    return passesFilters;
+  });
+
+  const renderStars = (count: number) => {
+    return "★".repeat(count) + "☆".repeat(5 - count);
+  };
+
   if (isLoading) return <LoadingSpinner />;
   if (error) return <div className="error-message">{error}</div>;
 
   return (
     <div className="browse-container">
-      <div className="flex justify-end mb-6">
+      <div className="browse-header">
+        <div className="filters-container">
+          <select
+            className="filter-select"
+            value={amountFilter}
+            onChange={(e) => setAmountFilter(e.target.value)}
+          >
+            <option value="all">All Amounts</option>
+            <option value="0-1">0-1 ETH</option>
+            <option value="1-5">1-5 ETH</option>
+            <option value="5+">5+ ETH</option>
+          </select>
+
+          <select
+            className="filter-select"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+          >
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
+
+          <select
+            className="filter-select"
+            value={tagFilter}
+            onChange={(e) => setTagFilter(e.target.value)}
+          >
+            <option value="all">All Tags</option>
+            {getAllUniqueTags().map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
+            ))}
+          </select>
+
+          <select
+            className="filter-select"
+            value={reputationFilter}
+            onChange={(e) => setReputationFilter(e.target.value)}
+          >
+            <option value="all">All Ratings</option>
+            <option value="5">
+              <span className="rating-option">
+                <span className="rating-star">{renderStars(5)}</span>
+                <span className="rating-text">Only</span>
+              </span>
+            </option>
+            <option value="4">
+              <span className="rating-option">
+                <span className="rating-star">{renderStars(4)}</span>
+                <span className="rating-text">& up</span>
+              </span>
+            </option>
+            <option value="3">
+              <span className="rating-option">
+                <span className="rating-star">{renderStars(3)}</span>
+                <span className="rating-text">& up</span>
+              </span>
+            </option>
+          </select>
+
+          <label className="website-filter">
+            <input
+              type="checkbox"
+              checked={hasWebsiteFilter}
+              onChange={(e) => setHasWebsiteFilter(e.target.checked)}
+            />
+            <div className="toggle-switch"></div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+          </label>
+        </div>
+
         <button
           onClick={() => setIsGridView(!isGridView)}
           className="view-switch-button"
@@ -148,7 +303,7 @@ const Browse = () => {
 
       {isGridView ? (
         <div className="browse-grid">
-          {contracts.map((contract) => (
+          {filteredContracts.map((contract) => (
             <div key={contract.id} className="w-full">
               <BountyCard contract={contract} isListView={false} />
             </div>
@@ -156,7 +311,7 @@ const Browse = () => {
         </div>
       ) : (
         <div className="browse-list">
-          {contracts.map((contract) => (
+          {filteredContracts.map((contract) => (
             <BountyCard
               key={contract.id}
               contract={contract}

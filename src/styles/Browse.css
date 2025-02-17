@@ -67,3 +67,132 @@
   margin-left: 0;
   margin-right: 0;
 }
+
+.browse-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  margin: 0 auto 2rem auto;
+}
+
+.filters-container {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.filter-select:focus {
+  border-color: var(--primary-blue);
+}
+
+.filter-select option {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+.website-filter {
+  background: var(--bg-dark);
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.website-filter:hover {
+  border-color: var(--primary-blue);
+}
+
+.website-filter svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.website-filter input[type="checkbox"]:checked ~ svg {
+  opacity: 1;
+  color: var(--primary-blue);
+}
+
+.website-filter input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 40px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggle-switch::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  top: 2px;
+  left: 2px;
+  transition: all 0.3s ease;
+}
+
+.website-filter input[type="checkbox"]:checked + .toggle-switch {
+  background: var(--primary-blue);
+}
+
+.website-filter input[type="checkbox"]:checked + .toggle-switch::before {
+  transform: translateX(20px);
+}
+
+.website-filter:hover .toggle-switch::before {
+  box-shadow: 0 0 5px rgba(var(--primary-blue-rgb), 0.5);
+}
+
+.rating-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rating-star {
+  color: var(--primary-blue);
+  font-size: 1.1em;
+}
+
+.rating-text {
+  margin-left: 4px;
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .filters-container {
+    gap: 0.5rem;
+  }
+  
+  .filter-select {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+  }
+}
