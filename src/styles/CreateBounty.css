@@ -88,6 +88,14 @@
   border-color: #555;
 }
 
+.char-counter {
+  display: block;
+  text-align: right;
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 5px;
+}
+
 .form-buttons {
   display: flex;
   justify-content: flex-end;

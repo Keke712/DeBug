@@ -15,6 +15,7 @@ import Browse from "./pages/Browse";
 import SubmitBugReport from "./pages/SubmitBugReport";
 import CreateBounty from "./pages/CreateBounty";
 import BountyReports from "./pages/BountyReports";
+import About from "./pages/About";
 
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
@@ -62,6 +63,7 @@ function App() {
                 </PrivateRoute>
               }
             />
+            <Route path="/about" element={<About />} />
           </Routes>
         </main>
       </div>

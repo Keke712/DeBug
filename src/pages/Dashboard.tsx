@@ -6,6 +6,7 @@ import BountyFactoryABI from "../contracts/BountyFactoryABI.json";
 import BountyLogicABI from "../contracts/BountyDepositLogic.json";
 import ReportFactoryABI from "../contracts/ReportFactory.json";
 import BugReportLogicABI from "../contracts/BugReportLogic.json";
+import { bytes32ToString } from "../utils/web3Utils";
 import {
   BOUNTY_FACTORY_ADDRESS,
   REPORT_FACTORY_ADDRESS,
@@ -117,8 +118,8 @@ const Dashboard = () => {
 
         return {
           id: bountyAddress,
-          title: metadata[0], // Le titre est le premier élément
-          description: metadata[1], // La description est le deuxième élément
+          title: bytes32ToString(metadata[0]), // Convert bytes32 to string
+          description: bytes32ToString(metadata[1]), // Convert bytes32 to string
           amount: ethers.formatEther(amount),
           status: "Active", // Changé de "active" à "Active"
           transaction_hash: event.transactionHash,
@@ -171,7 +172,7 @@ const Dashboard = () => {
 
           return {
             id: reportAddress,
-            description,
+            description: bytes32ToString(description), // Convert bytes32 to string
             status: ["PENDING", "CONFIRMED", "CANCELED"][status],
             reporter,
             contract_id: contractId,
@@ -327,9 +328,9 @@ const Dashboard = () => {
 
           return {
             id: reportAddress,
-            description,
+            description: bytes32ToString(description), // Convert bytes32 to string
             status: ["Pending", "Confirmed", "Rejected"][status],
-            bountyTitle: metadata[0],
+            bountyTitle: bytes32ToString(metadata[0]), // Convert bytes32 to string
             bountyAddress: bountyAddr,
             created_at: new Date().toISOString(),
           };
@@ -403,9 +404,9 @@ const Dashboard = () => {
 
         return {
           id: reportAddress,
-          description,
+          description: bytes32ToString(description), // Convert bytes32 to string
           reporter,
-          bountyTitle: metadata[0],
+          bountyTitle: bytes32ToString(metadata[0]), // Convert bytes32 to string
           bountyAddress: bountyAddr,
           created_at: new Date(event.block.timestamp * 1000).toISOString(),
         };
@@ -425,19 +426,6 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (activeView) {
       case "dashboard":
-        if (!userContracts.length) {
-          return (
-            <div className="dashboard-overview">
-              <div className="dashboard-header">
-                <h2>Dashboard Overview</h2>
-                <p className="user-info">
-                  Connected Address: {currentUser?.address}
-                </p>
-              </div>
-              <LoadingSpinner />
-            </div>
-          );
-        }
         const stats = calculateStats();
         return (
           <div className="dashboard-overview">
@@ -453,15 +441,15 @@ const Dashboard = () => {
 
             <div className="dashboard-stats">
               <div className="stat-card">
-                <div className="stat-value">{stats.totalBounties}</div>
+                <div className="stat-value">{stats.totalBounties || 0}</div>
                 <div className="stat-label">Total Bounties</div>
               </div>
               <div className="stat-card">
-                <div className="stat-value">{stats.totalAmount} ETH</div>
+                <div className="stat-value">{stats.totalAmount || "0.000"} ETH</div>
                 <div className="stat-label">Total Amount Invested</div>
               </div>
               <div className="stat-card">
-                <div className="stat-value">{stats.activeBounties}</div>
+                <div className="stat-value">{stats.activeBounties || 0}</div>
                 <div className="stat-label">Active Bounties</div>
               </div>
             </div>
@@ -482,19 +470,19 @@ const Dashboard = () => {
             <div className="report-stats">
               <div className="report-stat-card">
                 <div className="report-stat-value">
-                  {calculateReportStats().totalSubmitted}
+                  {calculateReportStats().totalSubmitted || 0}
                 </div>
                 <div className="report-stat-label">Total Reports Submitted</div>
               </div>
               <div className="report-stat-card">
                 <div className="report-stat-value">
-                  {calculateReportStats().acceptedSubmissions}
+                  {calculateReportStats().acceptedSubmissions || 0}
                 </div>
                 <div className="report-stat-label">Reports Accepted</div>
               </div>
               <div className="report-stat-card">
                 <div className="report-stat-value">
-                  {calculateReportStats().totalEarned}
+                  {calculateReportStats().totalEarned || "0.000 ETH"}
                 </div>
                 <div className="report-stat-label">Total ETH Earned</div>
               </div>
@@ -516,74 +504,68 @@ const Dashboard = () => {
         );
 
       case "bounties":
-        if (!userContracts.length) {
-          return (
-            <div className="user-ads">
-              <div className="dashboard-header">
-                <h3>My Bug Bounties</h3>
-              </div>
-              <LoadingSpinner />
-            </div>
-          );
-        }
         return (
           <div className="user-ads">
             <div className="dashboard-header">
               <h3>My Bug Bounties</h3>
             </div>
-            <table className="bounties-table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Reward</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                  <th>Contract</th>
-                  <th>Reports</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {userContracts.map((contract) => (
-                  <tr key={contract.id}>
-                    <td>{contract.title}</td>
-                    <td>{contract.amount} ETH</td>
-                    <td>
-                      <span
-                        className={`status-badge ${contract.status.toLowerCase()}`}
-                      >
-                        {contract.status}
-                      </span>
-                    </td>
-                    <td>
-                      {new Date(contract.created_at).toLocaleDateString()}
-                    </td>
-                    <td>
-                      {contract.transaction_hash.slice(0, 8)}...
-                      {contract.transaction_hash.slice(-6)}
-                    </td>
-                    <td>{contract.submissionCount}</td>
-                    <td>
-                      <button
-                        onClick={() =>
-                          navigate(`/bounty-reports/${contract.id}`)
-                        }
-                        className="view-reports-button"
-                      >
-                        View Reports
-                      </button>
-                    </td>
+            {userContracts.length > 0 ? (
+              <table className="bounties-table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Reward</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Contract</th>
+                    <th>Reports</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            {expandedContract && submissions.length > 0 && (
-              <div className="submissions-dropdown">
-                {submissions.map(renderSubmission)}
+                </thead>
+                <tbody>
+                  {userContracts.map((contract) => (
+                    <tr key={contract.id}>
+                      <td>{contract.title}</td>
+                      <td>{contract.amount} ETH</td>
+                      <td>
+                        <span
+                          className={`status-badge ${contract.status.toLowerCase()}`}
+                        >
+                          {contract.status}
+                        </span>
+                      </td>
+                      <td>
+                        {new Date(contract.created_at).toLocaleDateString()}
+                      </td>
+                      <td>
+                        {contract.transaction_hash.slice(0, 8)}...
+                        {contract.transaction_hash.slice(-6)}
+                      </td>
+                      <td>{contract.submissionCount}</td>
+                      <td>
+                        <button
+                          onClick={() =>
+                            navigate(`/bounty-reports/${contract.id}`)
+                          }
+                          className="view-reports-button"
+                        >
+                          View Reports
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="no-bounties-message">
+                <p>You haven't created any bug bounties yet.</p>
+                <button
+                  onClick={() => navigate("/create-bounty")}
+                  className="new-bounty-button"
+                >
+                  Create your first bounty
+                </button>
               </div>
-            )}
-            {expandedContract && submissions.length === 0 && (
-              <div className="no-submissions">No submissions yet</div>
             )}
           </div>
         );

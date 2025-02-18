@@ -423,3 +423,16 @@
 .etherscan-link:hover svg {
   transform: translate(2px, -2px);
 }
+
+.no-bounties-message {
+  text-align: center;
+  padding: 2rem;
+  background: var(--card-secondary-bg);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.no-bounties-message p {
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}

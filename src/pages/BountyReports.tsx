@@ -5,6 +5,7 @@ import ReportFactoryABI from "../contracts/ReportFactory.json";
 import BugReportLogicABI from "../contracts/BugReportLogic.json";
 import BountyLogicABI from "../contracts/BountyDepositLogic.json";
 import { REPORT_FACTORY_ADDRESS } from "../constants/addresses";
+import { bytes32ToString } from "../utils/web3Utils";
 import "../styles/BountyReports.css";
 
 const BountyReports: React.FC = () => {
@@ -55,7 +56,7 @@ const BountyReports: React.FC = () => {
 
             return {
               id: reportAddress,
-              description,
+              description: bytes32ToString(description), // Convertir bytes32 en string
               status: ["PENDING", "CONFIRMED", "CANCELED"][status],
               reporter,
               created_at: new Date().toISOString(),

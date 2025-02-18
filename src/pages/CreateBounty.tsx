@@ -3,8 +3,11 @@ import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import BountyFactoryABI from "../contracts/BountyFactoryABI.json";
 import { BOUNTY_FACTORY_ADDRESS } from "../constants/addresses";
+import { stringToBytes32 } from "../utils/web3Utils";
 import Toast from "../components/Toast";
 import "../styles/CreateBounty.css";
+
+const MAX_LENGTH = 32;
 
 const CreateBounty = () => {
   const [title, setTitle] = useState("");
@@ -32,6 +35,10 @@ const CreateBounty = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (title.length > MAX_LENGTH || description.length > MAX_LENGTH) {
+      setError(`Title and description must be at most ${MAX_LENGTH} characters long.`);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -51,10 +58,10 @@ const CreateBounty = () => {
 
       const bountyAmount = ethers.parseEther(price);
       const tx = await factory.createBounty(
-        title,
-        description,
-        tags.length > 0 ? tags : ["security", "ethereum"],
-        website,
+        stringToBytes32(title),
+        stringToBytes32(description),
+        tags.map(tag => stringToBytes32(tag)),
+        stringToBytes32(website),
         { value: bountyAmount }
       );
       const receipt = await tx.wait();
@@ -114,8 +121,10 @@ const CreateBounty = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Smart Contract Security Audit"
+              maxLength={MAX_LENGTH}
               required
             />
+            <small className="char-counter">{title.length}/{MAX_LENGTH}</small>
           </div>
           <div className="form-group">
             <label htmlFor="description">Program Description</label>
@@ -124,8 +133,10 @@ const CreateBounty = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the scope, rules, and specific areas of focus for your bug bounty program"
+              maxLength={MAX_LENGTH}
               required
             />
+            <small className="char-counter">{description.length}/{MAX_LENGTH}</small>
           </div>
           <div className="form-group">
             <label htmlFor="price">Reward Pool (ETH)</label>

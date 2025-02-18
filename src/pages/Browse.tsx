@@ -6,6 +6,7 @@ import BountyFactoryABI from "../contracts/BountyFactoryABI.json";
 import BountyLogicABI from "../contracts/BountyDepositLogic.json";
 import { BOUNTY_FACTORY_ADDRESS } from "../constants/addresses";
 import "../styles/Browse.css";
+import { bytes32ToString } from "../utils/web3Utils";
 
 interface Contract {
   id: string;
@@ -73,16 +74,16 @@ const Browse = () => {
 
           return {
             id: bountyAddress,
-            title,
-            description,
+            title: bytes32ToString(title),
+            description: bytes32ToString(description), // Convertir directement en string
             amount: ethers.formatEther(amount),
             created_at: new Date().toISOString(),
             transaction_hash: event.transactionHash,
             contract_type: "bug_bounty",
-            tags, // Utilisation des tags du contrat
+            tags: tags.map((tag: string) => bytes32ToString(tag)), // Convertir chaque tag de bytes32 à string
             wallet_address: company,
             contract_address: bountyAddress,
-            website, // Ajout du website aux données du contrat
+            website: bytes32ToString(website), // Ajout du website aux données du contrat
           };
         });
 
@@ -252,7 +253,7 @@ const Browse = () => {
             >
               <circle cx="12" cy="12" r="10" />
               <line x1="2" y1="12" x2="22" y2="12" />
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z" />
             </svg>
           </label>
         </div>

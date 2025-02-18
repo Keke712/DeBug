@@ -4,6 +4,7 @@ import { ethers } from "ethers";
 import { REPORT_FACTORY_ADDRESS } from "../constants/addresses";
 import ReportFactoryABI from "../contracts/ReportFactory.json";
 import BountyLogicABI from "../contracts/BountyDepositLogic.json";
+import { stringToBytes32 } from "../utils/web3Utils";
 import "../styles/SubmitBugReport.css";
 import Toast from "../components/Toast";
 
@@ -14,6 +15,8 @@ interface Contract {
   amount: string;
   wallet_address: string;
 }
+
+const MAX_LENGTH = 32;
 
 const SubmitBugReport = () => {
   const { contractId } = useParams();
@@ -68,6 +71,10 @@ const SubmitBugReport = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (description.length > MAX_LENGTH) {
+      setError(`Description must be at most ${MAX_LENGTH} characters long.`);
+      return;
+    }
     setIsLoading(true);
     setError(null);
 
@@ -92,7 +99,7 @@ const SubmitBugReport = () => {
         signer
       );
 
-      const tx = await reportFactory.createReport(cleanContractId, description);
+      const tx = await reportFactory.createReport(cleanContractId, stringToBytes32(description));
       await tx.wait();
 
       setToastMessage("Bug report submitted successfully!");
@@ -147,8 +154,11 @@ const SubmitBugReport = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe the bug you found..."
+            maxLength={MAX_LENGTH}
             required
+            className="description-input"
           />
+          <small className="char-limit">{description.length}/{MAX_LENGTH}</small>
         </div>
         {error && <div className="error-message">{error}</div>}
         <button type="submit" disabled={isLoading} className="submit-button">
