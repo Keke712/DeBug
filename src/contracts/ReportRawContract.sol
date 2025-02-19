@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract BugReportLogic {
-    enum Status { Pending, Confirmed, Canceled }
+    enum Status { Pending, Confirmed, Canceled, Completed }
     
     address public bountyContract;  
     address public reporter;        
@@ -49,12 +49,15 @@ contract BugReportLogic {
     function confirmReport() external payable {
         _checkOnlyBountyContract();
         _checkWhenPending();
-        status = Status.Confirmed;
         
-        (bool success, ) = reporter.call{value: msg.value}("");
+        uint amountReceived = msg.value;
+        require(amountReceived > 0, "No reward received");
+        
+        (bool success, ) = reporter.call{value: amountReceived}("");
         require(success, "Transfer to reporter failed");
         
-        emit ReportConfirmed(reporter, msg.value);
+        status = Status.Completed;
+        emit ReportConfirmed(reporter, amountReceived);
     }
 
     function cancelReport() external {

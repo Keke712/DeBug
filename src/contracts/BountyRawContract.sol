@@ -13,11 +13,15 @@ contract BountyDepositLogic {
     bytes32 public description;
     bytes32[] public tags;
     bytes32 public website;
+
+    enum BountyStatus { Active, Completed }
+    BountyStatus public status;
     
     event DepositReceived(address sender, uint amount);
     event RecipientValidated(address recipient);
     event BountyReleased(address recipient, uint amount);
     event MetadataUpdated(bytes32 title, bytes32 description, bytes32[] tags, bytes32 website);
+    event BountyCompleted(address recipient, uint amount);
 
     function _checkInitializer() internal {
         require(!initialized, "Already initialized");
@@ -40,6 +44,10 @@ contract BountyDepositLogic {
         require(recipientValidated, "Recipient not validated yet");
     }
 
+    function _checkActive() internal view {
+        require(status == BountyStatus.Active, "Bounty is already completed");
+    }
+
     function initialize(
         address _companyAddress,
         bytes32 _title,
@@ -60,6 +68,8 @@ contract BountyDepositLogic {
         tags = _tags;
         website = _website;
         
+        status = BountyStatus.Active;
+
         emit DepositReceived(companyAddress, bountyAmount);
         emit MetadataUpdated(title, description, tags, website);
     }
@@ -126,17 +136,23 @@ contract BountyDepositLogic {
     {
         _checkOnlyCompany();
         _checkFundsDeposited();
+        _checkActive();
+        
         uint amountToRelease = address(this).balance;
-        (bool success, ) = reportAddress.call(
+        (bool success, ) = reportAddress.call{value: amountToRelease}(
             abi.encodeWithSignature("confirmReport()")
         );
         require(success, "Report confirmation failed");
+        
+        status = BountyStatus.Completed;
+        emit BountyCompleted(reportAddress, amountToRelease);
     }
 
     function cancelBugReport(address reportAddress) 
         external 
     {
         _checkOnlyCompany();
+        _checkActive();
         (bool success, ) = reportAddress.call(
             abi.encodeWithSignature("cancelReport()")
         );
