@@ -190,3 +190,9 @@
   line-height: 1.6;
   letter-spacing: 0.3px;
 }
+
+.home-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

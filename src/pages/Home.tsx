@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import Footer from "../components/Footer";
 import "../styles/Home.css";
 
 interface Ad {
@@ -28,27 +29,8 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="about-section">
-        <div className="about-header">
-          <h2>About Us</h2>
-          <div className="header-line"></div>
-        </div>
-        <div className="specialties">
-          <div className="specialty-card">
-            <h3>Cybersecurity</h3>
-            <p>
-              Advanced vulnerability detection and resolution for enterprise
-              systems
-            </p>
-          </div>
-          <div className="specialty-card">
-            <h3>Web 3</h3>
-            <p>Blockchain security and smart contract protection solutions</p>
-          </div>
-        </div>
-      </div>
-
       <div className="ads-grid"></div>
+      <Footer />
     </div>
   );
 };

@@ -1,0 +1,52 @@
+.footer {
+  background: linear-gradient(145deg, rgba(33, 42, 62, 0.95), rgba(25, 32, 48, 0.95));
+  backdrop-filter: blur(10px);
+  padding: 1rem 0;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.footer-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-around;
+  padding: 0 1rem;
+  font-size: 0.9rem;
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.footer-section a {
+    text-decoration: none;
+  color: #4CAF50;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.footer-section p {
+  color: #a0a7b5;
+  font-size: 0.8rem;
+}
+
+.footer-section a:hover {
+  color: #4CAF50;
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer-bottom p {
+  color: #666;
+  font-size: 0.75rem;
+}
