@@ -422,7 +422,6 @@ const Dashboard = () => {
     }
   };
 
-  // Modifier le case "dashboard" dans renderContent
   const renderContent = () => {
     switch (activeView) {
       case "dashboard":
@@ -504,81 +503,67 @@ const Dashboard = () => {
         );
 
       case "bounties":
+        if (userContracts.length === 0) {
+          setActiveView("dashboard");
+          return null;
+        }
         return (
           <div className="user-ads">
             <div className="dashboard-header">
               <h3>My Bug Bounties</h3>
             </div>
-            {userContracts.length > 0 ? (
-              <table className="bounties-table">
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Reward</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th>Contract</th>
-                    <th>Reports</th>
-                    <th>Actions</th>
+            <table className="bounties-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Reward</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Contract</th>
+                  <th>Reports</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userContracts.map((contract) => (
+                  <tr key={contract.id}>
+                    <td>{contract.title}</td>
+                    <td>{contract.amount} ETH</td>
+                    <td>
+                      <span
+                        className={`status-badge ${contract.status.toLowerCase()}`}
+                      >
+                        {contract.status}
+                      </span>
+                    </td>
+                    <td>
+                      {new Date(contract.created_at).toLocaleDateString()}
+                    </td>
+                    <td>
+                      {contract.transaction_hash.slice(0, 8)}...
+                      {contract.transaction_hash.slice(-6)}
+                    </td>
+                    <td>{contract.submissionCount}</td>
+                    <td>
+                      <button
+                        onClick={() =>
+                          navigate(`/bounty-reports/${contract.id}`)
+                        }
+                        className="view-reports-button"
+                      >
+                        View Reports
+                      </button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {userContracts.map((contract) => (
-                    <tr key={contract.id}>
-                      <td>{contract.title}</td>
-                      <td>{contract.amount} ETH</td>
-                      <td>
-                        <span
-                          className={`status-badge ${contract.status.toLowerCase()}`}
-                        >
-                          {contract.status}
-                        </span>
-                      </td>
-                      <td>
-                        {new Date(contract.created_at).toLocaleDateString()}
-                      </td>
-                      <td>
-                        {contract.transaction_hash.slice(0, 8)}...
-                        {contract.transaction_hash.slice(-6)}
-                      </td>
-                      <td>{contract.submissionCount}</td>
-                      <td>
-                        <button
-                          onClick={() =>
-                            navigate(`/bounty-reports/${contract.id}`)
-                          }
-                          className="view-reports-button"
-                        >
-                          View Reports
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="no-bounties-message">
-                <p>You haven't created any bug bounties yet.</p>
-                <button
-                  onClick={() => navigate("/create-bounty")}
-                  className="new-bounty-button"
-                >
-                  Create your first bounty
-                </button>
-              </div>
-            )}
+                ))}
+              </tbody>
+            </table>
           </div>
         );
       case "submissions":
-        if (!userSubmissions.length) {
-          return (
-            <div className="user-submissions">
-              <div className="dashboard-header">
-                <h3>Active Submissions</h3>
-              </div>
-              <LoadingSpinner />
-            </div>
-          );
+        if (userSubmissions.length === 0) {
+          setActiveView("dashboard");
+          return null;
         }
         return (
           <div className="user-submissions">
@@ -618,9 +603,6 @@ const Dashboard = () => {
                 ))}
               </tbody>
             </table>
-            {userSubmissions.length === 0 && (
-              <div className="no-submissions">No submissions found</div>
-            )}
           </div>
         );
       case "public":
@@ -749,13 +731,15 @@ const Dashboard = () => {
         isVisible={showToast}
         onClose={() => setShowToast(false)}
       />
-            <Sidebar onViewChange={setActiveView} activeView={activeView} />   
-       {" "}
+      <Sidebar
+        onViewChange={setActiveView}
+        activeView={activeView}
+        hasBounties={userContracts.length > 0}
+        hasSubmissions={userSubmissions.length > 0}
+      />
       <div className="dashboard-content">
-                <div className="dashboard-container">{renderContent()}</div>   
-         {" "}
+        <div className="dashboard-container">{renderContent()}</div>
       </div>
-         {" "}
     </div>
   );
 };
