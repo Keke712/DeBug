@@ -52,12 +52,4 @@ export const bytes32ToString = (bytes32: any): string => {
     }
 };
 
-// Utility function to check if a string can be encoded as bytes32
-export const canBeBytes32 = (text: string): boolean => {
-    try {
-        const bytes = ethers.toUtf8Bytes(text);
-        return bytes.length <= 31;
-    } catch {
-        return false;
-    }
-};
+

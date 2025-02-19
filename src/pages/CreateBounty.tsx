@@ -35,8 +35,8 @@ const CreateBounty = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (title.length > MAX_LENGTH || description.length > MAX_LENGTH) {
-      setError(`Title and description must be at most ${MAX_LENGTH} characters long.`);
+    if (title.length > MAX_LENGTH) {
+      setError(`Title must be at most ${MAX_LENGTH} characters long.`);
       return;
     }
     setIsLoading(true);
@@ -133,10 +133,8 @@ const CreateBounty = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the scope, rules, and specific areas of focus for your bug bounty program"
-              maxLength={MAX_LENGTH}
               required
             />
-            <small className="char-counter">{description.length}/{MAX_LENGTH}</small>
           </div>
           <div className="form-group">
             <label htmlFor="price">Reward Pool (ETH)</label>

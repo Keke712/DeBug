@@ -17,9 +17,16 @@ interface MenuItem {
 interface SidebarProps {
   onViewChange: (view: string) => void;
   activeView: string;
+  hasBounties: boolean;
+  hasSubmissions: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onViewChange, activeView }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  onViewChange,
+  activeView,
+  hasBounties,
+  hasSubmissions,
+}) => {
   const menuItems: MenuItem[] = [
     {
       id: 1,
@@ -27,13 +34,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onViewChange, activeView }) => {
       icon: <FaChartLine className="menu-icon" />,
       view: "dashboard",
     },
-    {
+    hasBounties && {
       id: 2,
       title: "My Bounties",
       icon: <FaBug className="menu-icon" />,
       view: "bounties",
     },
-    {
+    hasSubmissions && {
       id: 3,
       title: "Active Submissions",
       icon: <FaClipboardList className="menu-icon" />,
@@ -42,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onViewChange, activeView }) => {
     {
       id: 4,
       title: "Public",
-      icon: <FaGlobe className="menu-icon" />, // Changé de FaClipboardList à FaGlobe
+      icon: <FaGlobe className="menu-icon" />,
       view: "public",
     },
     {
@@ -51,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onViewChange, activeView }) => {
       icon: <FaCode className="menu-icon" />,
       view: "developers",
     },
-  ];
+  ].filter(Boolean) as MenuItem[];
 
   return (
     <div className="sidebar">

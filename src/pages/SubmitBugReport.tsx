@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 import { REPORT_FACTORY_ADDRESS } from "../constants/addresses";
 import ReportFactoryABI from "../contracts/ReportFactory.json";
 import BountyLogicABI from "../contracts/BountyDepositLogic.json";
-import { stringToBytes32 } from "../utils/web3Utils";
+import { bytes32ToString, stringToBytes32 } from "../utils/web3Utils";
 import "../styles/SubmitBugReport.css";
 import Toast from "../components/Toast";
 
@@ -56,8 +56,8 @@ const SubmitBugReport = () => {
 
         setContract({
           id: cleanContractId,
-          title: metadata[0], // Le titre est le premier élément retourné
-          description: metadata[1], // La description est le deuxième élément
+          title: bytes32ToString(metadata[0]), // Le titre est le premier élément retourné
+          description: stringToBytes32(metadata[1]), // La description est le deuxième élément
           amount: ethers.formatEther(contractBalance),
           wallet_address: await bountyContract.companyAddress(), // Utiliser la variable publique companyAddress
         });
